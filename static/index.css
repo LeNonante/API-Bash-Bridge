@@ -324,7 +324,7 @@ body {
     color: #ef4444;
 }
 
-.path-code, .bash-code {
+.path-code, .bash-code, .domain-code {
     font-family: 'Courier New', monospace;
     font-size: 13px;
     padding: 4px 8px;
