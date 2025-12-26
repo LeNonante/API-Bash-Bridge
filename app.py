@@ -220,7 +220,7 @@ def edit_route(route_id):
         action = request.form.get("action")
         if action == "save":
             route["method"] = request.form.get("method")
-            route["path"] = request.form.get("path")
+            route["path"] = request.form.get("path").strip('/')
             route["description"] = request.form.get("description")
             route["command"] = request.form.get("command")
             
@@ -278,7 +278,7 @@ def create_route():
         new_route = {
             "id": new_id,
             "method": request.form.get("method"),
-            "path": request.form.get("path"),
+            "path": request.form.get("path").strip('/'),
             "description": request.form.get("description"),
             "command": request.form.get("command"),
             "active": True,
