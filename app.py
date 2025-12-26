@@ -56,8 +56,7 @@ def index():
     nb_etats={False:0,True:0}
     for route in routes:
         nb_etats[route["active"]]+=1
-    return render_template('index.html', routes=routes, total_routes=len(routes), active_routes=nb_etats[True], inactive_routes=nb_etats[False])
-
+    return render_template('index.html', routes=routes, api_prefix=getApiPrefix(), total_routes=len(routes), active_routes=nb_etats[True], inactive_routes=nb_etats[False])
 
 
 @app.route('/register', methods=["GET", "POST"])
@@ -154,27 +153,102 @@ def export_commands():
         return "Aucun fichier commandes.json à exporter", 404
     return send_file(commands_path, as_attachment=True, download_name="commandes.json")
 
-@app.route('/toggle_alias', methods=["POST"])
+@app.route('/toggle_route', methods=["POST"])
 @login_required
-def toggle_alias():
-    alias_id = request.form.get("alias_id")
-    if alias_id is None:
+def toggle_route():
+    route_id = request.form.get("route_id")
+    if route_id is None:
         return redirect(url_for('index'))
 
     try:
-        alias_id = int(alias_id)
+        route_id = int(route_id)
     except ValueError:
         return redirect(url_for('index'))
 
     routes = json.load(open(os.path.join(app.root_path, "commandes.json"), "r", encoding="utf-8"))
     for route in routes:
-        if route["id"] == alias_id:
+        if route["id"] == route_id:
             route["active"] = not route["active"]
             break
 
     with open(os.path.join(app.root_path, "commandes.json"), "w", encoding="utf-8") as f:
         json.dump(routes, f, indent=4, ensure_ascii=False)
 
+    return redirect(url_for('index'))
+
+
+@app.route('/route/edit/<int:route_id>', methods=["GET", "POST"])
+@login_required
+def edit_route(route_id):
+    commands_path = os.path.join(app.root_path, "commandes.json")
+    api_prefix = getApiPrefix()
+    routes = json.load(open(commands_path, "r", encoding="utf-8"))
+    
+    route = next((r for r in routes if r["id"] == route_id), None)
+    if not route:
+        return redirect(url_for('index'))
+    
+    context = {"route": route, "api_prefix": api_prefix}
+    
+    if request.method == "POST":
+        action = request.form.get("action")
+        
+        if action == "save":
+            route["method"] = request.form.get("method")
+            route["path"] = request.form.get("path")
+            route["description"] = request.form.get("description")
+            route["command"] = request.form.get("command")
+            
+            with open(commands_path, "w", encoding="utf-8") as f:
+                json.dump(routes, f, indent=4, ensure_ascii=False)
+            
+            context["success"] = "Route sauvegardée avec succès."
+            return render_template('edit_route.html', **context)
+        
+        elif action == "test":
+            import subprocess
+            try:
+                result = subprocess.run(
+                    route["command"],
+                    shell=True,
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+                output = ""
+                if result.stdout:
+                    output += result.stdout
+                if result.stderr:
+                    if output:
+                        output += "\n"
+                    output += result.stderr
+                if not output.strip():
+                    output = "Test effectué (aucune sortie)."
+                context["test_output"] = output
+                context["test_success"] = result.returncode == 0
+            except subprocess.TimeoutExpired:
+                context["test_output"] = "La commande a dépassé le délai d'exécution (10s)."
+                context["test_success"] = False
+            except Exception as e:
+                context["test_output"] = f"Erreur: {str(e)}"
+                context["test_success"] = False
+            
+            return render_template('edit_route.html', **context)
+    
+    return render_template('edit_route.html', **context)
+
+
+@app.route('/route/delete/<int:route_id>', methods=["POST"])
+@login_required
+def delete_route(route_id):
+    commands_path = os.path.join(app.root_path, "commandes.json")
+    routes = json.load(open(commands_path, "r", encoding="utf-8"))
+    
+    routes = [r for r in routes if r["id"] != route_id]
+    
+    with open(commands_path, "w", encoding="utf-8") as f:
+        json.dump(routes, f, indent=4, ensure_ascii=False)
+    
     return redirect(url_for('index'))
 
 

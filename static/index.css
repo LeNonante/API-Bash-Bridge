@@ -324,6 +324,11 @@ body {
     color: #ef4444;
 }
 
+.method-patch {
+    background: rgba(225, 68, 239, 0.2);
+    color: #ef44de;
+}
+
 .path-code, .bash-code, .domain-code {
     font-family: 'Courier New', monospace;
     font-size: 13px;

@@ -24,3 +24,15 @@ def setAdminPassword(env_file,password) :
 def checkAdminPassword(password) :
     registered_password = os.getenv("ADMIN_PASSWORD")
     return check_password_hash(registered_password, password)
+
+def getApiPrefix():
+    prefix = os.getenv("API_PREFIX")
+    return prefix
+
+def setApiPrefix(env_file, prefix):
+    set_key(env_file, "API_PREFIX", prefix)
+    if prefix[-1] != '/':
+        prefix += '/'
+    if not prefix.startswith('/'):
+        prefix = '/' + prefix
+    load_dotenv(override=True)

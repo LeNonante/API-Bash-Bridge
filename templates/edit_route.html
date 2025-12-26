@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Éditer la Route - API-Bash Bridge</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='edit_route.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="5" width="17" height="14" rx="2" stroke="#22d3ee" stroke-width="2"/>
+                    <path d="M7 10L9 12L7 14" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 14H16" stroke="#22d3ee" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span>API-Bash Bridge</span>
+            </div>
+        </div>
+        
+        <div class="nav-center">
+            <a href="/" class="nav-link">Dashboard</a>
+            <a href="/settings" class="nav-link">Paramètres</a>
+            <a href="/logout" class="nav-link">Déconnexion</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <div>
+                <h1>Éditer la Route</h1>
+                <p class="page-description">Configurez le point de terminaison HTTP et le script système associé.</p>
+            </div>
+            <div class="header-actions">
+                <form method="post" style="display: inline;">
+                    <input type="hidden" name="action" value="test">
+                    <button type="submit" class="btn-secondary">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/>
+                        </svg>
+                        Tester
+                    </button>
+                </form>
+                <button type="submit" form="save-form" class="btn-primary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <polyline points="17 21 17 13 7 13 7 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <polyline points="7 3 7 8 15 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Sauvegarder
+                </button>
+            </div>
+        </div>
+
+        {% if success %}
+        <div class="alert alert-success">{{ success }}</div>
+        {% endif %}
+
+        {% if test_output %}
+        <div class="alert {{ 'alert-success' if test_success else 'alert-error' }}">
+            <strong>Résultat du test:</strong>
+            <pre class="test-output">{{ test_output }}</pre>
+        </div>
+        {% endif %}
+
+        <form id="save-form" method="post" class="edit-grid">
+            <input type="hidden" name="action" value="save">
+            
+            <!-- Left Column: Configuration -->
+            <div class="edit-section">
+                <div class="section-header">
+                    <h2>Configuration de la Route</h2>
+                    <span class="status-badge {{ 'status-active' if route.active else 'status-inactive' }}">
+                        {{ 'ACTIVE' if route.active else 'INACTIVE' }}
+                    </span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="method">Méthode HTTP</label>
+                        <select id="method" name="method" class="form-select" required>
+                            <option value="GET" {% if route.method == 'GET' %}selected{% endif %}>GET</option>
+                            <option value="POST" {% if route.method == 'POST' %}selected{% endif %}>POST</option>
+                            <option value="PUT" {% if route.method == 'PUT' %}selected{% endif %}>PUT</option>
+                            <option value="DELETE" {% if route.method == 'DELETE' %}selected{% endif %}>DELETE</option>
+                            <option value="PATCH" {% if route.method == 'PATCH' %}selected{% endif %}>PATCH</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Endpoint Path</label>
+                        <div class="path-input-group">
+                            <span class="path-prefix">{{ api_prefix }}</span>
+                            <input type="text" id="path" name="path" value="{{ route.path }}" class="form-input path-input" placeholder="deploy-service/firstservice" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="script-section">
+                    <div class="script-header">
+                        <h3>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="3" y="5" width="17" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
+                                <path d="M7 10L9 12L7 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M12 14H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            Script Bash
+                        </h3>
+                        <button type="button" class="btn-icon-small btn-copy-script" title="Copier le script">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            Copier
+                        </button>
+                    </div>
+                    <textarea id="command" name="command" class="code-editor" rows="12" required>{{ route.command }}</textarea>
+                </div>
+            </div>
+
+            <!-- Right Column: Details -->
+            <div class="edit-section">
+                <h2>Détails</h2>
+                
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" class="form-textarea" rows="6" placeholder="Déclenche le build docker-compose pour le service principal. Utilisé par le webhook GitHub après un push sur la branche main.">{{ route.description }}</textarea>
+                </div>
+
+                <div class="danger-zone">
+                    <h3>Zone de Danger</h3>
+                    <p>La suppression d'une route est irréversible. Procédez avec prudence.</p>
+                    <form method="post" action="{{ url_for('delete_route', route_id=route.id) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette route ?');">
+                        <button type="submit" class="btn-danger-zone">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Supprimer cette route
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </form>
+    </main>
+
+    <script>
+        // Copy script to clipboard
+        document.querySelector('.btn-copy-script').addEventListener('click', async function() {
+            const textarea = document.getElementById('command');
+            try {
+                await navigator.clipboard.writeText(textarea.value);
+                const originalText = this.innerHTML;
+                this.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><polyline points="20 6 9 17 4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Copié !';
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                }, 1500);
+            } catch (e) {
+                textarea.select();
+                document.execCommand('copy');
+            }
+        });
+    </script>
+</body>
+</html>

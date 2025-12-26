@@ -1,24 +1,24 @@
 [
     {
         "id": 1,
-        "method": "GET",
-        "path": "/api",
+        "method": "PATCH",
+        "path": "test/ddsdq",
         "description": "This is a sample command for testing purposes.",
-        "command": "echo 'Hello, World!'",
-        "active": false
+        "command": "qsd\r\nqsd\r\n\r\nqsdqsd\r\nqsdqsd\r\n\r\nqsdqsd\r\nqsdqsd\r\nqsdqsdqsd\r\n\r\nqsdqsd\r\n\r\n\r\n\r\n\r\nqsdqsd\r\ndqsd\r\nqs\r\ndqsdqsdqsd\r\nqsd",
+        "active": true
     },
     {
         "id": 2,
         "method": "POST",
-        "path": "/api",
+        "path": "test",
         "description": "This is a sample command for testing purposes.",
-        "command": "echo 'Hello, World!'",
+        "command": "mkdir test",
         "active": true
     },
     {
         "id": 3,
         "method": "DELETE",
-        "path": "/api",
+        "path": "test",
         "description": "This is a sample command for testing purposes.",
         "command": "echo 'Hello, World!'",
         "active": true
@@ -26,7 +26,7 @@
     {
         "id": 4,
         "method": "PUT",
-        "path": "/api",
+        "path": "test",
         "description": "This is a sample command for testing purposes.",
         "command": "echo 'AURORE'",
         "active": true
@@ -34,7 +34,7 @@
     {
         "id": 5,
         "method": "GET",
-        "path": "/api",
+        "path": "test",
         "description": "This is a sample command for testing purposes.",
         "command": "echo 'Hello, World!'",
         "active": true
@@ -42,7 +42,7 @@
     {
         "id": 6,
         "method": "POST",
-        "path": "/api",
+        "path": "test",
         "description": "This is a sample command for testing purposes.",
         "command": "echo 'Hello, World!'",
         "active": true
@@ -50,7 +50,7 @@
     {
         "id": 7,
         "method": "DELETE",
-        "path": "/api",
+        "path": "test",
         "description": "This is a sample command for testing purposes.",
         "command": "echo 'Hello, World!'",
         "active": true
@@ -58,7 +58,7 @@
     {
         "id": 8,
         "method": "PUT",
-        "path": "/api",
+        "path": "test",
         "description": "This is a sample command for testing purposes.",
         "command": "echo 'AURORE'",
         "active": true
@@ -66,7 +66,7 @@
     {
         "id": 9,
         "method": "GET",
-        "path": "/api",
+        "path": "test",
         "description": "This is a sample command for testing purposes.",
         "command": "echo 'Hello, World!'",
         "active": true
@@ -74,7 +74,7 @@
     {
         "id": 10,
         "method": "POST",
-        "path": "/api",
+        "path": "test",
         "description": "This is a sample command for testing purposes.",
         "command": "echo 'Hello, World!'",
         "active": true
@@ -82,7 +82,7 @@
     {
         "id": 11,
         "method": "DELETE",
-        "path": "/api",
+        "path": "test",
         "description": "This is a sample command for testing purposes.",
         "command": "echo 'Hello, World!'",
         "active": true
@@ -90,7 +90,7 @@
     {
         "id": 12,
         "method": "PUT",
-        "path": "/api/test",
+        "path": "testtest",
         "description": "This is a sample command for testing purposes.",
         "command": "echo 'AURORE'",
         "active": true
