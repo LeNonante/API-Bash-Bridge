@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API-Bash Bridge - Paramètres</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='settings.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="5" width="17" height="14" rx="2" stroke="#22d3ee" stroke-width="2"/>
+                    <path d="M7 10L9 12L7 14" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 14H16" stroke="#22d3ee" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span>API-Bash Bridge</span>
+            </div>
+        </div>
+        
+        <div class="nav-center">
+            <a href="/" class="nav-link">Dashboard</a>
+            <a href="/settings" class="nav-link active">Paramètres</a>
+            <a href="/logout" class="nav-link">Déconnexion</a>
+          </div>
+      
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <div>
+                <h1>Paramètres</h1>
+            </div>
+        </div>
+        <div class="login-card" style="max-width: 640px; margin: 0;">
+
+            <h2>Changer le mot de passe administrateur</h2>
+            <p class="description">Saisissez votre ancien mot de passe, puis le nouveau (deux fois) pour confirmer.</p>
+
+            <form method="post">
+                <input type="hidden" name="action" value="changePassword">
+                <div class="form-group">
+                    <label for="current_password">Ancien mot de passe</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="current_password" name="current_password" placeholder="••••••••" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="new_password1">Nouveau mot de passe</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="new_password1" name="new_password1" placeholder="••••••••" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="new_password2">Confirmer le nouveau mot de passe</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="new_password2" name="new_password2" placeholder="••••••••" required>
+                    </div>
+                </div>
+                    {% if erreur %}
+                    <p class="error-message" style="margin-bottom: 16px;">{{ erreur }}</p>
+                    {% endif %}
+                    {% if success %}
+                    <p class="success-message" style="margin-bottom: 16px;">{{ success }}</p>
+                    {% endif %}
+                <button class="btn-primary" type="submit">
+                    Mettre à jour le mot de passe
+                </button>
+            </form>
+        </div>
+    </main>
+
+</body>
+</html>

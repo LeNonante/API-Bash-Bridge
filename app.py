@@ -107,5 +107,29 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
+
+@app.route('/settings', methods=["GET", "POST"])
+@login_required
+def settings():
+    if request.method == "POST":
+        if request.form.get("action") == "changePassword":
+            current_password = request.form.get("current_password")
+            new_password1 = request.form.get("new_password1")
+            new_password2 = request.form.get("new_password2")
+
+            # Vérifier l'ancien mot de passe
+            if not checkAdminPassword(current_password):
+                return render_template('settings.html', erreur="Ancien mot de passe incorrect.")
+
+            # Vérifier la correspondance des nouveaux mots de passe
+            if not new_password1 or not new_password2 or new_password1 != new_password2:
+                return render_template('settings.html', erreur="Les nouveaux mots de passe doivent correspondre.")
+
+            # Mettre à jour le mot de passe admin
+            setAdminPassword(".env", new_password1)
+            return render_template('settings.html', success="Mot de passe mis à jour avec succès.")
+
+    return render_template('settings.html')
+
 if __name__ == "__main__":
     app.run(debug=True)
