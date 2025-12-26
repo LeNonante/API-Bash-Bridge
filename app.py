@@ -154,5 +154,29 @@ def export_commands():
         return "Aucun fichier commandes.json à exporter", 404
     return send_file(commands_path, as_attachment=True, download_name="commandes.json")
 
+@app.route('/toggle_alias', methods=["POST"])
+@login_required
+def toggle_alias():
+    alias_id = request.form.get("alias_id")
+    if alias_id is None:
+        return redirect(url_for('index'))
+
+    try:
+        alias_id = int(alias_id)
+    except ValueError:
+        return redirect(url_for('index'))
+
+    routes = json.load(open(os.path.join(app.root_path, "commandes.json"), "r", encoding="utf-8"))
+    for route in routes:
+        if route["id"] == alias_id:
+            route["active"] = not route["active"]
+            break
+
+    with open(os.path.join(app.root_path, "commandes.json"), "w", encoding="utf-8") as f:
+        json.dump(routes, f, indent=4, ensure_ascii=False)
+
+    return redirect(url_for('index'))
+
+
 if __name__ == "__main__":
     app.run(debug=True)

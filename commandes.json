@@ -1,95 +1,95 @@
 [
     {
         "id": 1,
-        "method":"GET",
+        "method": "GET",
+        "path": "/api",
+        "description": "This is a sample command for testing purposes.",
+        "command": "echo 'Hello, World!'",
+        "active": false
+    },
+    {
+        "id": 2,
+        "method": "POST",
         "path": "/api",
         "description": "This is a sample command for testing purposes.",
         "command": "echo 'Hello, World!'",
         "active": true
     },
     {
-        "id": 2,
-        "method":"POST",
-        "path": "/api",
-        "description": "This is a sample command for testing purposes.",
-        "command": "echo 'Hello, World!'",
-        "active": false
-    },
-    {
         "id": 3,
-        "method":"DELETE",
+        "method": "DELETE",
         "path": "/api",
         "description": "This is a sample command for testing purposes.",
         "command": "echo 'Hello, World!'",
-        "active": false
+        "active": true
     },
     {
         "id": 4,
-        "method":"PUT",
+        "method": "PUT",
         "path": "/api",
         "description": "This is a sample command for testing purposes.",
         "command": "echo 'AURORE'",
         "active": true
     },
     {
-        "id": 1,
-        "method":"GET",
+        "id": 5,
+        "method": "GET",
         "path": "/api",
         "description": "This is a sample command for testing purposes.",
         "command": "echo 'Hello, World!'",
         "active": true
     },
     {
-        "id": 2,
-        "method":"POST",
+        "id": 6,
+        "method": "POST",
         "path": "/api",
         "description": "This is a sample command for testing purposes.",
         "command": "echo 'Hello, World!'",
-        "active": false
+        "active": true
     },
     {
-        "id": 3,
-        "method":"DELETE",
+        "id": 7,
+        "method": "DELETE",
         "path": "/api",
         "description": "This is a sample command for testing purposes.",
         "command": "echo 'Hello, World!'",
-        "active": false
+        "active": true
     },
     {
-        "id": 4,
-        "method":"PUT",
+        "id": 8,
+        "method": "PUT",
         "path": "/api",
         "description": "This is a sample command for testing purposes.",
         "command": "echo 'AURORE'",
         "active": true
     },
     {
-        "id": 1,
-        "method":"GET",
+        "id": 9,
+        "method": "GET",
         "path": "/api",
         "description": "This is a sample command for testing purposes.",
         "command": "echo 'Hello, World!'",
         "active": true
     },
     {
-        "id": 2,
-        "method":"POST",
+        "id": 10,
+        "method": "POST",
         "path": "/api",
         "description": "This is a sample command for testing purposes.",
         "command": "echo 'Hello, World!'",
-        "active": false
+        "active": true
     },
     {
-        "id": 3,
-        "method":"DELETE",
+        "id": 11,
+        "method": "DELETE",
         "path": "/api",
         "description": "This is a sample command for testing purposes.",
         "command": "echo 'Hello, World!'",
-        "active": false
+        "active": true
     },
     {
-        "id": 4,
-        "method":"PUT",
+        "id": 12,
+        "method": "PUT",
         "path": "/api/test",
         "description": "This is a sample command for testing purposes.",
         "command": "echo 'AURORE'",
