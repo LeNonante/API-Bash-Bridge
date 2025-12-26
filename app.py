@@ -7,6 +7,7 @@ import re
 import secrets
 from werkzeug.security import generate_password_hash, check_password_hash
 from api.routes import api_bp
+import subprocess
 
 pattern_prefix_api = r'^[a-zA-Z0-9]+$'
 load_dotenv()
@@ -230,7 +231,6 @@ def edit_route(route_id):
             return render_template('edit_route.html', **context)
         
         elif action == "test":
-            import subprocess
             try:
                 result = subprocess.run(
                     route["command"],
@@ -258,6 +258,7 @@ def edit_route(route_id):
                 context["test_success"] = False
             
             return render_template('edit_route.html', **context)
+        
         elif action == "generate_token":
             token=request.form.get("token_value")
             hashed_token=generate_password_hash(token)

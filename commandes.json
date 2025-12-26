@@ -1,12 +1,12 @@
 [
     {
         "id": 11,
-        "method": "DELETE",
+        "method": "GET",
         "path": "test",
         "description": "This is a sample command for testing purposes.",
-        "command": "echo 'Hello, World!'",
+        "command": "mkdir test\r\n#test\r\n\r\nmkdir test2 #comm",
         "active": true,
-        "hashed_token": "scrypt:32768:8:1$SSSgyZ53pRGRpXza$e8a03d52704e628c510999261e077c67ed681cfd7d6a2e2b3a6dd029ba54eb20635af05963a8bfc2bfc48748c69405c95266ca8d773494541241756657be6c4a"
+        "hashed_token": "scrypt:32768:8:1$OUWEP3ZrZ0BnLxie$fe4b285d3914f08bfb33070bace9b4a9a84dceacb553e4d5f2aa2ff2c1620a4db85ebc0946d40dc66fbafa4f7ef0ba807beb0fcf8a7c05635130ed54ec843b04"
     },
     {
         "id": 12,
