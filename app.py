@@ -6,12 +6,13 @@ import json
 import re
 import secrets
 from werkzeug.security import generate_password_hash, check_password_hash
+from api.routes import api_bp
 
 pattern_prefix_api = r'^[a-zA-Z0-9]+$'
 load_dotenv()
 
 app = Flask(__name__)
-
+app.register_blueprint(api_bp) #Enregistrement du blueprint de l'API dynamique. Comme on veut un prefixe qui peut changer sans redemarrer l'app, on le gère dans le blueprint lui mêmeet pas ici (qui est plus porpre pour un prefixe fixe).
 
 if not isThereASecretKey(): #Si pas de clef secrete (utilisée pour les sessions)
     # Générer une clé secrète aléatoire et la stocker dans le .env
@@ -32,6 +33,7 @@ class User(UserMixin):
 #Avant chaque requete, on verifie si l'application est initialisée        
 @app.before_request
 def check_initialisation():
+    
     # Empêcher boucle infinie : on laisse accéder à /register
     if request.endpoint=="static":
         return

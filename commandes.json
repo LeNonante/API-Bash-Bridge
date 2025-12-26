@@ -25,5 +25,14 @@
         "command": "aaaaaaa",
         "active": true,
         "hashed_token": "scrypt:32768:8:1$vcyFVM0qNRwa1ydx$e69b8a53b372b6d4f587ff067ca6a80f3f0abde43674553d05d58a44c3eb160db452005ea7747863b23d242a1fd8a4344b2c4fb8e5ae6d2d4fb57636f5bfd637"
+    },
+    {
+        "id": 14,
+        "method": "GET",
+        "path": "/test25/test26",
+        "description": "",
+        "command": "mkdir test\r\ncd test",
+        "active": true,
+        "hashed_token": "scrypt:32768:8:1$OOwY8n3ar4BFLzRu$9d647477925b7263cab6353c23cc7118d62a897efefc41f80fffdebf6dc75e6930db7d061155c9c47e3fb7e323f3bb75a0e464545e29e5e24c82b49fea1a1b11"
     }
 ]
