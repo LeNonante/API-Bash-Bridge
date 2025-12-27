@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API-Bash Bridge - Paramètres</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='settings.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="/" class="logo-link" style="text-decoration: none;">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="5" width="17" height="14" rx="2" stroke="#22d3ee" stroke-width="2"/>
+                        <path d="M7 10L9 12L7 14" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 14H16" stroke="#22d3ee" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span>API-Bash Bridge</span>
+                </div>
+            </a>
+        </div>
+        
+        <div class="nav-center">
+            <a href="/" class="nav-link">Dashboard</a>
+            <a href="/settings" class="nav-link active">Paramètres</a>
+            <a href="/logout" class="nav-link">Déconnexion</a>
+          </div>
+      
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <div>
+                <h1>Paramètres</h1>
+            </div>
+        </div>
+        <div class="settings-grid">
+            <div class="login-card settings-card">
+                <h2>Changer le mot de passe administrateur</h2>
+                <p class="description">Saisissez votre ancien mot de passe, puis le nouveau (deux fois) pour confirmer.</p>
+
+                <form method="post">
+                    <input type="hidden" name="action" value="changePassword">
+                    <div class="form-group">
+                        <label for="current_password">Ancien mot de passe</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="current_password" name="current_password" placeholder="••••••••" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new_password1">Nouveau mot de passe</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="new_password1" name="new_password1" placeholder="••••••••" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new_password2">Confirmer le nouveau mot de passe</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="new_password2" name="new_password2" placeholder="••••••••" required>
+                        </div>
+                    </div>
+                        {% if erreur %}
+                        <p class="error-message" style="margin-bottom: 16px;">{{ erreur }}</p>
+                        {% endif %}
+                        {% if success %}
+                        <p class="success-message" style="margin-bottom: 16px;">{{ success }}</p>
+                        {% endif %}
+                    <button class="btn-primary" type="submit">
+                        Mettre à jour le mot de passe
+                    </button>
+                </form>
+            </div>
+
+            <div class="login-card settings-card">
+                <h2>Exporter / Importer la configuration</h2>
+                <p class="description">Exportez le fichier commandes.json actuel ou importez un nouveau JSON pour remplacer la configuration.</p>
+
+                <div class="button-row">
+                    <a class="btn-secondary" href="/settings/export">Exporter commandes.json</a>
+                </div>
+
+                {% if import_error %}
+                <p class="error-message" style="margin-bottom: 16px;">{{ import_error }}</p>
+                {% endif %}
+                {% if import_success %}
+                <p class="success-message" style="margin-bottom: 16px;">{{ import_success }}</p>
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="importCommands">
+                    <div class="form-group">
+                        <label for="commands_file">Importer un fichier JSON</label>
+                        <div class="input-wrapper file-input-wrapper">
+                            <input type="file" id="commands_file" name="commands_file" accept=".json" required>
+                        </div>
+                    </div>
+                    <button class="btn-primary" type="submit">Importer le fichier</button>
+                </form>
+            </div>
+
+            <div class="login-card settings-card">
+                <h2>Changer le préfixe API</h2>
+                <p class="description">Changez le préfixe utilisé pour les appels API.</p>
+                <p class="description">Ancien préfixe : {{ api_prefix }}</p>
+                <form method="post">
+                    <input type="hidden" name="action" value="changeApiPrefix">
+                    <div class="form-group">
+                        <label for="new_prefix">Nouveau préfixe API (sans '/')</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="new_prefix" name="new_prefix" placeholder="nouveau_prefixe" required>
+                        </div>
+                    </div>
+                    {% if api_prefix_erreur %}
+                    <p class="error-message" style="margin-bottom: 16px;">{{ api_prefix_erreur }}</p>
+                    {% endif %}
+                    {% if api_prefix_success %}
+                    <p class="success-message" style="margin-bottom: 16px;">{{ api_prefix_success }}</p>
+                    {% endif %}
+                    <button class="btn-primary" type="submit">
+                        Mettre à jour le préfixe API
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>

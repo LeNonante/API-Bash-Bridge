@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API-Bash Bridge - Routes</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="/" class="logo-link" style="text-decoration: none;">
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="5" width="17" height="14" rx="2" stroke="#22d3ee" stroke-width="2"/>
+                    <path d="M7 10L9 12L7 14" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 14H16" stroke="#22d3ee" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span>API-Bash Bridge</span>
+            </div>
+            </a>
+        </div>
+        
+        <div class="nav-center">
+            <a href="/" class="nav-link active">Dashboard</a>
+            <a href="/settings" class="nav-link">Paramètres</a>
+            <a href="/logout" class="nav-link">Déconnexion</a>
+          </div>
+      
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <div>
+                <h1>Routes API</h1>
+                <p class="page-description">Configurez les liens entre vos endpoints HTTP et les commandes système.</p>
+                <p class="page-description">Domaine des routes configurées : <code class="domain-code">{{request.host_url}}{{ api_prefix[1:] }}</code></p>
+            </div>
+            <a href="/route/new" style="text-decoration: none;">
+            <button class="btn-primary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                Ajouter une route
+            </button>
+            </a>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <p class="stat-label">Total Routes</p>
+                    <p class="stat-value">{{ total_routes }}</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                        <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <p class="stat-label">Actives</p>
+                    <p class="stat-value">{{ active_routes }}</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon orange">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <p class="stat-label">Inactives</p>
+                    <p class="stat-value">{{ inactive_routes }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-bar">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+                <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <input type="text" placeholder="Rechercher une méthode, une route (ex: /deploy), une description, une commande...">
+        </div>
+
+        <!-- Routes Table -->
+        <div class="table-container">
+            <table class="routes-table">
+                <thead>
+                    <tr>
+                        <th>MÉTHODE</th>
+                        <th>CHEMIN</th>
+                        <th>DESCRIPTION</th>
+                        <th>COMMANDE BASH</th>
+                        <th>ÉTAT</th>
+                        <th>ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for route in routes %}
+                    <tr>
+                        <td>
+                            <span class="method-badge method-{{ route.method.lower() }}">{{ route.method }}</span>
+                        </td>
+                        <td><code class="path-code">{{ route.path }}</code></td>
+                        <td class="description">{{ route.description }}</td>
+                        {% if route.command|length < 66 %}
+                            <td><code class="bash-code">{{ route.command }}</code></td>
+                        {% else %}
+                            <td><code class="bash-code">{{ route.command[:62] }}...</code></td>
+                        {% endif %}
+                        <td>
+                            <form method="post" action="{{ url_for('toggle_route') }}">
+                            <input type="hidden" name="route_id" value="{{ route.id }}">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" {% if route.active %}checked{% endif %} onchange="this.form.submit()">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </form>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-icon btn-copy" title="Copier l'adresse de l'endpoint" data-copy="{{ request.host_url[:-1] }}/{{ route.path }}">
+                                    <svg fill="#000000" width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2" fill="none"/>
+                                    </svg>
+                                </button>
+                                <a href="{{ url_for('edit_route', route_id=route.id) }}" class="btn-icon" title="Éditer">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <p class="pagination-info">Affichage des {{ total_routes }} routes</p>
+        </div>
+    </main>
+
+    <script>
+        // Toggle switches
+        document.querySelectorAll('.toggle-switch input').forEach(toggle => {
+            toggle.addEventListener('change', function() {
+                console.log('Route status changed:', this.checked);
+            });
+        });
+
+        // Search functionality
+        const searchInput = document.querySelector('.search-bar input');
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const rows = document.querySelectorAll('.routes-table tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        // Copy endpoint to clipboard
+        document.querySelectorAll('.btn-copy').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const text = this.dataset.copy;
+                const originalTitle = this.getAttribute('title');
+                try {
+                    await navigator.clipboard.writeText(text);
+                    this.setAttribute('title', 'Copié !');
+                    this.classList.add('copied');
+                    setTimeout(() => {
+                        this.setAttribute('title', originalTitle);
+                        this.classList.remove('copied');
+                    }, 1500);
+                } catch (e) {
+                    // Fallback pour vieux navigateurs
+                    const ta = document.createElement('textarea');
+                    ta.value = text;
+                    document.body.appendChild(ta);
+                    ta.select();
+                    try { document.execCommand('copy'); } finally {
+                        document.body.removeChild(ta);
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
