@@ -8,10 +8,16 @@ import secrets
 from werkzeug.security import generate_password_hash, check_password_hash
 from api.routes import api_bp
 import subprocess
+import os
 
 pattern_prefix_api = r'^[a-zA-Z0-9]+$'
 pattern_path_route = r'^[a-zA-Z0-9/_-]+$'
 load_dotenv()
+
+if not os.path.exists(os.path.join(os.path.dirname(__file__), "commandes.json")): #Si le fichier commandes.json n'existe pas, on le crée avec un tableau vide
+    with open(os.path.join(os.path.dirname(__file__), "commandes.json"), "w", encoding="utf-8") as f:
+        json.dump([], f)
+
 
 app = Flask(__name__)
 app.register_blueprint(api_bp) #Enregistrement du blueprint de l'API dynamique. Comme on veut un prefixe qui peut changer sans redemarrer l'app, on le gère dans le blueprint lui mêmeet pas ici (qui est plus porpre pour un prefixe fixe).
