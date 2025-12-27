@@ -1,0 +1,24 @@
+[Unit]
+Description=Interface et programme liant API & commandes bash
+After=network.target
+
+[Service]
+# --- C'EST ICI QUE TOUT SE JOUE ---
+# L'application tourne sous VOTRE identité
+User=aurel
+Group=aurel
+
+# Dossiers
+WorkingDirectory=/opt/api-bash-bridge
+ExecStart=/opt/api-bash-bridge/venv/bin/python app.py
+
+# Redémarrage auto
+Restart=always
+RestartSec=5
+
+# Variables d'environnement
+Environment="ENV=production"
+# EnvironmentFile=/opt/api-bash-bridge/.env
+
+[Install]
+WantedBy=multi-user.target
