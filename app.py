@@ -32,6 +32,7 @@ app.wsgi_app = ProxyFix(
     x_prefix=1
 )
 app.register_blueprint(api_bp) #Enregistrement du blueprint de l'API dynamique. Comme on veut un prefixe qui peut changer sans redemarrer l'app, on le gère dans le blueprint lui mêmeet pas ici (qui est plus porpre pour un prefixe fixe).
+app.config["APP_VERSION"] = get_git_version()
 
 if not isThereASecretKey(): #Si pas de clef secrete (utilisée pour les sessions)
     # Générer une clé secrète aléatoire et la stocker dans le .env

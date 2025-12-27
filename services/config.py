@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv, set_key, dotenv_values
 from werkzeug.security import generate_password_hash, check_password_hash
+import subprocess
 
 def isThereASecretKey() :
     return os.getenv("SECRET_KEY") is not None
@@ -36,3 +37,12 @@ def setApiPrefix(env_file, prefix):
         prefix = '/' + prefix
     set_key(env_file, "API_PREFIX", prefix)
     load_dotenv(override=True)
+    
+def get_git_version():
+    try:
+        return subprocess.check_output(
+            ["git", "describe", "--tags", "--dirty", "--always"],
+            stderr=subprocess.DEVNULL
+        ).decode().strip()
+    except Exception:
+        return "unknown"
