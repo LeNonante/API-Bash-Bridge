@@ -55,7 +55,7 @@ def api_dynamique_path(full_path):
                                         shell_command += " && " #On ajoute le séparateur entre les commandes
                                     shell_command += line_clean # On ajoute la commande nettoyée
                             try:
-                                subprocess.run(shell_command, shell=True)
+                                subprocess.run(shell_command, shell=True, timeout=60) # Exécuter la commande shell avec un timeout de 60 secondes
                                 return jsonify({"message": f"Commande exécutée: {stocked_command}"}), 200
                             except Exception as e:
                                 current_app.logger.error(f"Erreur execution bash: {str(e)}")
