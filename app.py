@@ -257,8 +257,18 @@ def edit_route(route_id):
         
         elif action == "test":
             try:
+                
+                stocked_command = route['command'] # Récupérer la commande stockée
+                lines=stocked_command.splitlines() #séparation en lignes
+                shell_command = "" #On prépare la commande shell
+                for line in lines:
+                    line_clean = line.split('#')[0].strip() #On enlève les commentaires et les espaces de début/fin
+                    if line_clean != "": #Si la ligne n'est pas vide après nettoyage
+                        if shell_command != "": #Si ce n'est pas la première commande
+                            shell_command += " && " #On ajoute le séparateur entre les commandes
+                        shell_command += line_clean # On ajoute la commande nettoyée
                 result = subprocess.run(
-                    route["command"],
+                    shell_command,
                     shell=True,
                     capture_output=True,
                     text=True,
