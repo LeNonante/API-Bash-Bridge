@@ -339,6 +339,10 @@ def delete_route(route_id):
     
     return redirect(url_for('index'))
 
+try:
+    PORT=int(os.getenv("PORT", 5000))
+except:
+    PORT=5000
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=PORT, debug=False)
