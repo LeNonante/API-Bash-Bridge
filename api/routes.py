@@ -1,4 +1,4 @@
-from flask import jsonify, request, Blueprint
+from flask import jsonify, request, Blueprint, current_app
 from services.config import getApiPrefix
 from werkzeug.security import check_password_hash
 import os
@@ -11,14 +11,18 @@ api_bp = Blueprint('api_dynamique', __name__)
 @api_bp.route('/<path:full_path>', methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH']) # Route pour gérer toutes les requêtes sous le préfixe API
 def api_dynamique_path(full_path):
     prefix = getApiPrefix().strip('/')  # Supprimer le '/' de début et de la fin
-    
+    current_app.logger.info(f"Appel API recu : {full_path} | Methode: {request.method} | IP: {request.remote_addr}")
     if not full_path.startswith(prefix+'/'):
         # Si le chemin ne commence pas par le préfixe, renvoyer 404
         return jsonify({"error": "Not Found"}), 404
     
-    # Charger les données du fichier commandes.json
-    with open('commandes.json', 'r') as f:
-        routes_data = json.load(f)
+    try:
+        with open('commandes.json', 'r') as f:
+            routes_data = json.load(f)
+    except Exception as e:
+        current_app.logger.error(f"Erreur lecture commandes.json : {str(e)}")
+        return jsonify({"error": "Internal Server Error"}), 500
+
     
     # On enlève la longueur du prefix + 1 pour le slash suivant
     # Ex: "monapi/test1/r1" -> "test1/r1"
@@ -41,6 +45,7 @@ def api_dynamique_path(full_path):
                         token_route_hashed = route['hashed_token']
                         if check_password_hash(token_route_hashed, token_recu):
                             stocked_command = route['command'] # Récupérer la commande stockée
+                            current_app.logger.info(f"[SUCCES] Execution route: /{route_path} | IP: {request.remote_addr}")
                             lines=stocked_command.splitlines() #séparation en lignes
                             shell_command = "" #On prépare la commande shell
                             for line in lines:
@@ -49,10 +54,16 @@ def api_dynamique_path(full_path):
                                     if shell_command != "": #Si ce n'est pas la première commande
                                         shell_command += " && " #On ajoute le séparateur entre les commandes
                                     shell_command += line_clean # On ajoute la commande nettoyée
-                            subprocess.run(shell_command, shell=True)
-                            return jsonify({"message": f"Commande exécutée: {stocked_command}"}), 200
+                            try:
+                                subprocess.run(shell_command, shell=True)
+                                return jsonify({"message": f"Commande exécutée: {stocked_command}"}), 200
+                            except Exception as e:
+                                current_app.logger.error(f"Erreur execution bash: {str(e)}")
+                                return jsonify({"error": "Internal Server Error"}), 500
                         else:
+                            current_app.logger.warning(f"[ECHEC] Token invalide pour /{route_path} | IP: {request.remote_addr}")
                             return jsonify({"error": "Unauthorized"}), 401
                 else:
+                    current_app.logger.warning(f"[ECHEC] Pas de token fourni pour /{route_path} | IP: {request.remote_addr}")
                     return jsonify({"error": "Unauthorized"}), 401
     return jsonify({"error": "Not Found"}), 404
