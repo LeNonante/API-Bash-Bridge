@@ -39,6 +39,8 @@
             </div>
         </div>
         <div class="settings-grid">
+
+            <!-- Changer le mot de passe -->
             <div class="login-card settings-card">
                 <h2>Changer le mot de passe administrateur</h2>
                 <p class="description">Saisissez votre ancien mot de passe, puis le nouveau (deux fois) pour confirmer.</p>
@@ -77,6 +79,7 @@
                 </form>
             </div>
 
+            <!-- Changer le préfixe API -->
             <div class="login-card settings-card">
                 <h2>Changer le préfixe API</h2>
                 <p class="description">Changez le préfixe utilisé pour les appels API.</p>
@@ -101,6 +104,7 @@
                 </form>
             </div>
 
+            <!-- Exporter / Importer -->
             <div class="login-card settings-card">
                 <h2>Exporter / Importer la configuration</h2>
                 <p class="description">Exportez le fichier commandes.json actuel ou importez un nouveau JSON pour remplacer la configuration.</p>
@@ -128,6 +132,7 @@
                 </form>
             </div>
 
+            <!-- Exporter les logs -->
             <div class="login-card settings-card">
                 <h2>Exporter les logs</h2>
                 <p class="description">Exportez les fichiers de logs. Ils seront téléchargés dans une archive ZIP si plusieurs fichiers existent.</p>
@@ -137,7 +142,195 @@
                 </div>
             </div>
 
-            
+            <div class="login-card settings-card">
+                <h2>Mode de sécurité</h2>
+                <p class="description">Sélectionnez le mode de sécurité pour les accès API.</p>
+
+                <form method="post">
+                    <input type="hidden" name="action" value="changeMode">
+                    <div class="form-group">
+                        <label for="mode">Mode actuel : <strong>{{ current_mode }}</strong></label>
+                        <div style="margin: 16px 0;">
+                            <label style="display: flex; align-items: center; margin-bottom: 12px; cursor: pointer;">
+                                <input type="radio" name="mode" value="WHITELIST" {% if current_mode == 'WHITELIST' %}checked{% endif %} style="margin-right: 8px;">
+                                <span>
+                                    <strong>Whitelist</strong> - Seules les IPs autorisées peuvent accéder
+                                </span>
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="radio" name="mode" value="BLACKLIST" {% if current_mode == 'BLACKLIST' %}checked{% endif %} style="margin-right: 8px;">
+                                <span>
+                                    <strong>Blacklist</strong> - Toutes les IPs peuvent accéder sauf celles interdites
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                    {% if mode_success %}
+                    <p class="success-message" style="margin-bottom: 16px;">{{ mode_success }}</p>
+                    {% endif %}
+                    {% if mode_erreur %}
+                    <p class="error-message" style="margin-bottom: 16px;">{{ mode_erreur }}</p>
+                    {% endif %}
+                    <button class="btn-primary" type="submit">
+                        Mettre à jour le mode
+                    </button>
+                </form>
+            </div>
+            {% if current_mode == 'WHITELIST' %}
+                <div class="login-card settings-card">
+                    <h2>Gestion de la Whitelist</h2>
+                    <p class="description">Gérez les IPs autorisées à accéder à l'API en mode Whitelist.</p>
+
+                    <form method="post" style="margin-bottom: 24px;">
+                        <input type="hidden" name="action" value="addIp">
+                        <input type="hidden" name="list_type" value="whitelist">
+                        <div class="form-group">
+                            <label for="whitelist_ip">Ajouter une IP</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="whitelist_ip" name="ip_address" placeholder="192.168.1.100" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="whitelist_desc">Description (optionnel)</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="whitelist_desc" name="ip_description" placeholder="Ex: Mon serveur">
+                            </div>
+                        </div>
+                        {% if whitelist_error %}
+                        <p class="error-message" style="margin-bottom: 16px;">{{ whitelist_error }}</p>
+                        {% endif %}
+                        {% if whitelist_success %}
+                        <p class="success-message" style="margin-bottom: 16px;">{{ whitelist_success }}</p>
+                        {% endif %}
+                        <button class="btn-primary" type="submit">
+                            Ajouter à la Whitelist
+                        </button>
+                    </form>
+
+                    <div style="margin-top: 16px;">
+                        <h3 style="font-size: 0.95em; margin-bottom: 12px;">IPs en Whitelist</h3>
+                        {% if whitelist %}
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #e0e0e0;">
+                                    <th style="text-align: left; padding: 8px; font-weight: 600;">IP</th>
+                                    <th style="text-align: left; padding: 8px; font-weight: 600;">Description</th>
+                                    <th style="text-align: center; padding: 8px; font-weight: 600;">Statut</th>
+                                    <th style="text-align: center; padding: 8px; font-weight: 600;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ip_item in whitelist %}
+                                <tr style="border-bottom: 1px solid #f0f0f0;">
+                                    <td style="padding: 12px 8px; font-family: monospace;">{{ ip_item.ip }}</td>
+                                    <td style="padding: 12px 8px;">{{ ip_item.description or '-' }}</td>
+                                    <td style="text-align: center; padding: 12px 8px;">
+                                        <form method="post" style="display: inline;">
+                                            <input type="hidden" name="action" value="toggleIp">
+                                            <input type="hidden" name="list_type" value="whitelist">
+                                            <input type="hidden" name="ip_id" value="{{ ip_item.id }}">
+                                            <button type="submit" style="background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 4px; {% if ip_item.active %}background-color: #d4edda; color: #155724;{% else %}background-color: #f8d7da; color: #721c24;{% endif %}" title="Activer/Désactiver">
+                                                {% if ip_item.active %}<strong>Actif</strong>{% else %}<strong>Inactif</strong>{% endif %}
+                                            </button>
+                                        </form>
+                                    </td>
+                                    <td style="text-align: center; padding: 12px 8px;">
+                                        <form method="post" style="display: inline;">
+                                            <input type="hidden" name="action" value="removeIp">
+                                            <input type="hidden" name="list_type" value="whitelist">
+                                            <input type="hidden" name="ip_id" value="{{ ip_item.id }}">
+                                            <button type="submit" class="btn-danger" style="padding: 4px 8px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;" title="Supprimer">Supprimer</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <p style="color: #999; font-style: italic;">Aucune IP dans la whitelist</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if current_mode == 'BLACKLIST' %}
+                <div class="login-card settings-card">
+                    <h2>Gestion de la Blacklist</h2>
+                    <p class="description">Gérez les IPs interdites d'accès à l'API en mode Blacklist.</p>
+
+                    <form method="post" style="margin-bottom: 24px;">
+                        <input type="hidden" name="action" value="addIp">
+                        <input type="hidden" name="list_type" value="blacklist">
+                        <div class="form-group">
+                            <label for="blacklist_ip">Ajouter une IP</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="blacklist_ip" name="ip_address" placeholder="192.168.1.100" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="blacklist_desc">Description (optionnel)</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="blacklist_desc" name="ip_description" placeholder="Ex: Ordinateur indésirable">
+                            </div>
+                        </div>
+                        {% if blacklist_error %}
+                        <p class="error-message" style="margin-bottom: 16px;">{{ blacklist_error }}</p>
+                        {% endif %}
+                        {% if blacklist_success %}
+                        <p class="success-message" style="margin-bottom: 16px;">{{ blacklist_success }}</p>
+                        {% endif %}
+                        <button class="btn-primary" type="submit">
+                            Ajouter à la Blacklist
+                        </button>
+                    </form>
+
+                    <div style="margin-top: 16px;">
+                        <h3 style="font-size: 0.95em; margin-bottom: 12px;">IPs en Blacklist</h3>
+                        {% if blacklist %}
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #e0e0e0;">
+                                    <th style="text-align: left; padding: 8px; font-weight: 600;">IP</th>
+                                    <th style="text-align: left; padding: 8px; font-weight: 600;">Description</th>
+                                    <th style="text-align: center; padding: 8px; font-weight: 600;">Statut</th>
+                                    <th style="text-align: center; padding: 8px; font-weight: 600;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ip_item in blacklist %}
+                                <tr style="border-bottom: 1px solid #f0f0f0;">
+                                    <td style="padding: 12px 8px; font-family: monospace;">{{ ip_item.ip }}</td>
+                                    <td style="padding: 12px 8px;">{{ ip_item.description or '-' }}</td>
+                                    <td style="text-align: center; padding: 12px 8px;">
+                                        <form method="post" style="display: inline;">
+                                            <input type="hidden" name="action" value="toggleIp">
+                                            <input type="hidden" name="list_type" value="blacklist">
+                                            <input type="hidden" name="ip_id" value="{{ ip_item.id }}">
+                                            <button type="submit" style="background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 4px; {% if ip_item.active %}background-color: #d4edda; color: #155724;{% else %}background-color: #f8d7da; color: #721c24;{% endif %}" title="Activer/Désactiver">
+                                                {% if ip_item.active %}<strong>Actif</strong>{% else %}<strong>Inactif</strong>{% endif %}
+                                            </button>
+                                        </form>
+                                    </td>
+                                    <td style="text-align: center; padding: 12px 8px;">
+                                        <form method="post" style="display: inline;">
+                                            <input type="hidden" name="action" value="removeIp">
+                                            <input type="hidden" name="list_type" value="blacklist">
+                                            <input type="hidden" name="ip_id" value="{{ ip_item.id }}">
+                                            <button type="submit" class="btn-danger" style="padding: 4px 8px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;" title="Supprimer">Supprimer</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <p style="color: #999; font-style: italic;">Aucune IP dans la blacklist</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+
         </div>
         <footer style="font-size: 0.8em; color: #999; text-align: center;">
             Version {{ config.APP_VERSION }}

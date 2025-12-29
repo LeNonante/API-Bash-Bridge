@@ -15,6 +15,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import zipfile
 from io import BytesIO
+import ipaddress
 
 app = Flask(__name__)
 
@@ -173,8 +174,14 @@ def logout():
 def settings():
     context = {}
     context["api_prefix"] = getApiPrefix()[:-1]
+    context["current_mode"] = getMode()
+    context["whitelist"] = load_ip_list(os.path.join(app.root_path, "whitelist.json"))
+    context["blacklist"] = load_ip_list(os.path.join(app.root_path, "blacklist.json"))
+    
     if request.method == "POST":
-        if request.form.get("action") == "changePassword":
+        action = request.form.get("action")
+        
+        if action == "changePassword":
             current_password = request.form.get("current_password")
             new_password1 = request.form.get("new_password1")
             new_password2 = request.form.get("new_password2")
@@ -194,7 +201,7 @@ def settings():
             context["success"] = "Mot de passe mis à jour avec succès."
             return render_template('settings.html', **context)
 
-        if request.form.get("action") == "importCommands":
+        if action == "importCommands":
             uploaded_file = request.files.get("commands_file")
             if uploaded_file is None or uploaded_file.filename == "":
                 context["import_error"] = "Aucun fichier sélectionné."
@@ -209,7 +216,7 @@ def settings():
             context["import_success"] = "Fichier importé et sauvegardé."
             return render_template('settings.html', **context)
         
-        if request.form.get("action") == "changeApiPrefix":
+        if action == "changeApiPrefix":
             new_prefix = request.form.get("new_prefix")
             if not new_prefix:
                 context["api_prefix_erreur"] = "Le préfixe API ne peut pas être vide."
@@ -222,6 +229,63 @@ def settings():
             setApiPrefix(".env", new_prefix)
             context["api_prefix_success"] = "Préfixe API mis à jour avec succès."
             context["api_prefix"] = getApiPrefix()[:-1]
+        
+        if action == "changeMode":
+            new_mode = request.form.get("mode")
+            if setMode(".env", new_mode):
+                context["mode_success"] = f"Mode changé en {new_mode} avec succès."
+                context["current_mode"] = getMode()
+            else:
+                context["mode_erreur"] = "Mode invalide."
+        
+        if action == "addIp":
+            list_type = request.form.get("list_type")  # "whitelist" ou "blacklist"
+            ip_address = request.form.get("ip_address", "").strip()
+            ip_description = request.form.get("ip_description", "").strip()
+            
+            if not ip_address:
+                context[f"{list_type}_error"] = "L'adresse IP ne peut pas être vide."
+            else:
+                try:
+                    # Valider l'IP
+                    ipaddress.ip_address(ip_address)
+                    filename = os.path.join(app.root_path, f"{list_type}.json")
+                    success, message = add_ip_to_list(filename, ip_address, ip_description)
+                    if success:
+                        context[f"{list_type}_success"] = message
+                        context[list_type] = load_ip_list(filename)
+                    else:
+                        context[f"{list_type}_error"] = message
+                except ValueError:
+                    context[f"{list_type}_error"] = "L'adresse IP n'est pas valide."
+        
+        if action == "removeIp":
+            list_type = request.form.get("list_type")
+            ip_id = request.form.get("ip_id")
+            try:
+                ip_id = int(ip_id)
+                filename = os.path.join(app.root_path, f"{list_type}.json")
+                success, message = remove_ip_from_list(filename, ip_id)
+                if success:
+                    context[f"{list_type}_success"] = message
+                    context[list_type] = load_ip_list(filename)
+                else:
+                    context[f"{list_type}_error"] = message
+            except (ValueError, TypeError):
+                context[f"{list_type}_error"] = "ID invalide."
+        
+        if action == "toggleIp":
+            list_type = request.form.get("list_type")
+            ip_id = request.form.get("ip_id")
+            try:
+                ip_id = int(ip_id)
+                filename = os.path.join(app.root_path, f"{list_type}.json")
+                success, active = toggle_ip_in_list(filename, ip_id)
+                if success:
+                    context[list_type] = load_ip_list(filename)
+            except (ValueError, TypeError):
+                context[f"{list_type}_error"] = "ID invalide."
+    
     return render_template('settings.html', **context)
 
 
