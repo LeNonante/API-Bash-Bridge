@@ -1,5 +1,5 @@
 from flask import jsonify, request, Blueprint, current_app
-from services.config import getApiPrefix
+from services.config import getApiPrefix, getMode
 from werkzeug.security import check_password_hash
 import os
 import json
@@ -22,8 +22,40 @@ def api_dynamique_path(full_path):
     except Exception as e:
         current_app.logger.error(f"Erreur lecture commandes.json : {str(e)}")
         return jsonify({"error": "Internal Server Error"}), 500
-
     
+    try:
+        with open('blacklist.json', 'r') as f:
+            blacklist_data = json.load(f)
+    except Exception as e:
+        current_app.logger.error(f"Erreur lecture blacklist.json : {str(e)}")
+        return jsonify({"error": "Internal Server Error"}), 500
+    
+    blacklist_ips = []  # Liste des IPs en blacklist
+    whitelist_ips = []  # Liste des IPs en whitelist
+    
+    for item in blacklist_data:
+        if item['active']:
+            blacklist_ips.append(item['ip'])
+    
+    try:
+        with open('whitelist.json', 'r') as f:
+            whitelist_data = json.load(f)
+    except Exception as e:
+        current_app.logger.error(f"Erreur lecture whitelist.json : {str(e)}")
+        return jsonify({"error": "Internal Server Error"}), 500
+
+    for item in whitelist_data:
+        if item['active']:
+            whitelist_ips.append(item['ip'])
+
+    mode= getMode()
+    
+    if mode == 'BLACKLIST' and request.remote_addr in blacklist_ips:
+        current_app.logger.warning(f"[ECHEC] Mode BLACKLIST actif - Acces refuse | IP: {request.remote_addr}")
+        return jsonify({"error": "Service Unavailable"}), 503
+    elif mode == 'WHITELIST' and request.remote_addr not in whitelist_ips:
+        current_app.logger.warning(f"[ECHEC] Mode WHITELIST actif - Acces refuse | IP: {request.remote_addr}")
+        return jsonify({"error": "Service Unavailable"}), 503
     # On enlève la longueur du prefix + 1 pour le slash suivant
     # Ex: "monapi/test1/r1" -> "test1/r1"
     real_route_part = full_path[len(prefix)+1:].strip('/')
