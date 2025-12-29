@@ -215,7 +215,7 @@
                                 <tr style="border-bottom: 2px solid #e0e0e0;">
                                     <th style="text-align: left; padding: 8px; font-weight: 600;">IP</th>
                                     <th style="text-align: left; padding: 8px; font-weight: 600;">Description</th>
-                                    <th style="text-align: center; padding: 8px; font-weight: 600;">Statut</th>
+                                    <th style="text-align: center; padding: 8px; font-weight: 600;">Etat</th>
                                     <th style="text-align: center; padding: 8px; font-weight: 600;">Actions</th>
                                 </tr>
                             </thead>
@@ -229,9 +229,10 @@
                                             <input type="hidden" name="action" value="toggleIp">
                                             <input type="hidden" name="list_type" value="whitelist">
                                             <input type="hidden" name="ip_id" value="{{ ip_item.id }}">
-                                            <button type="submit" style="background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 4px; {% if ip_item.active %}background-color: #d4edda; color: #155724;{% else %}background-color: #f8d7da; color: #721c24;{% endif %}" title="Activer/Désactiver">
-                                                {% if ip_item.active %}<strong>Actif</strong>{% else %}<strong>Inactif</strong>{% endif %}
-                                            </button>
+                                            <label class="toggle-switch" title="Activer/Désactiver">
+                                                <input type="checkbox" {% if ip_item.active %}checked{% endif %} onchange="this.form.submit()">
+                                                <span class="toggle-slider"></span>
+                                            </label>
                                         </form>
                                     </td>
                                     <td style="text-align: center; padding: 12px 8px;">
@@ -292,7 +293,7 @@
                                 <tr style="border-bottom: 2px solid #e0e0e0;">
                                     <th style="text-align: left; padding: 8px; font-weight: 600;">IP</th>
                                     <th style="text-align: left; padding: 8px; font-weight: 600;">Description</th>
-                                    <th style="text-align: center; padding: 8px; font-weight: 600;">Statut</th>
+                                    <th style="text-align: center; padding: 8px; font-weight: 600;">Etat</th>
                                     <th style="text-align: center; padding: 8px; font-weight: 600;">Actions</th>
                                 </tr>
                             </thead>
@@ -306,9 +307,10 @@
                                             <input type="hidden" name="action" value="toggleIp">
                                             <input type="hidden" name="list_type" value="blacklist">
                                             <input type="hidden" name="ip_id" value="{{ ip_item.id }}">
-                                            <button type="submit" style="background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 4px; {% if ip_item.active %}background-color: #d4edda; color: #155724;{% else %}background-color: #f8d7da; color: #721c24;{% endif %}" title="Activer/Désactiver">
-                                                {% if ip_item.active %}<strong>Actif</strong>{% else %}<strong>Inactif</strong>{% endif %}
-                                            </button>
+                                            <label class="toggle-switch" title="Activer/Désactiver">
+                                                <input type="checkbox" {% if ip_item.active %}checked{% endif %} onchange="this.form.submit()">
+                                                <span class="toggle-slider"></span>
+                                            </label>
                                         </form>
                                     </td>
                                     <td style="text-align: center; padding: 12px 8px;">
