@@ -44,7 +44,7 @@ Une fois connecté, vous arrivez sur le tableau de bord principal. C'est ici que
 
 Cliquez sur le bouton Ajouter une route en haut à droite du dashboard.
 
-![Formulaire de création d'une nouvelle route]
+![Image page de nouvelle route](/static/docs/new_path.png)
 
 - **Méthode HTTP :** Choisissez le verbe HTTP qui déclenchera l'action (généralement POST ou GET).
 
@@ -66,7 +66,7 @@ Cliquez sur le bouton Ajouter une route en haut à droite du dashboard.
 
 Dans la page d'édition d'une route, vous disposez d'un bouton Tester.
 
-![Interface de test avec sortie console]
+![Image sortie de test de commandes](/static/docs/test.png)
 
 - Cela exécute réellement la commande sur le serveur.
 
@@ -109,7 +109,7 @@ Le token est récupérable uniquement dans la page Éditer la route ou lors de l
 
 Accessible via le menu Paramètres.
 
-![Page des paramètres généraux]
+![Image page de paramètres](/static/docs/settings.png)
 1. **Sauvegarde et Migration**
 
     - **Exporter commandes.json :** Télécharge un fichier JSON contenant toute votre configuration (routes, commandes, hash des tokens).
@@ -128,7 +128,7 @@ L'application enregistre toutes les tentatives d'accès.
 
 Vous pouvez restreindre l'accès à l'API (et non à l'interface admin) selon l'adresse IP de l'appelant.
 
-![Gestion de la Whitelist et Blacklist]
+![Gestion de la Whitelist et Blacklist](/static/docs/list.png)
 
 - **Mode Whitelist (Recommandé) :**
 
