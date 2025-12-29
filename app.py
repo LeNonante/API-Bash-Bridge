@@ -16,6 +16,7 @@ from logging.handlers import RotatingFileHandler
 import zipfile
 from io import BytesIO
 import ipaddress
+from markdown import markdown
 
 app = Flask(__name__)
 
@@ -464,6 +465,16 @@ def delete_route(route_id):
         json.dump(routes, f, indent=4, ensure_ascii=False)
     
     return redirect(url_for('index'))
+
+@app.route('/docs')
+def documentation():
+    docs_path = os.path.join(app.root_path, "services/doc_utilisation.md")
+    if not os.path.exists(docs_path):
+        return "Documentation introuvable.", 404
+    with open(docs_path, "r", encoding="utf-8") as f:
+        md_content = f.read()
+    html_content = markdown(md_content, extensions=['fenced_code', 'codehilite'])
+    return render_template('docs.html', content=html_content)
 
 try:
     PORT=int(os.getenv("PORT", 5000))

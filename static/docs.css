@@ -1,0 +1,38 @@
+.doc-content {
+    background: rgba(30, 41, 59, 0.6);
+    padding: 40px;
+    border-radius: 12px;
+    border: 1px solid rgba(51, 65, 85, 0.6);
+    line-height: 1.6;
+    color: #e2e8f0;
+}
+.doc-content h1, .doc-content h2, .doc-content h3 { 
+    color: #f8fafc; 
+    margin-top: 1.5em; 
+    margin-bottom: 0.5em; 
+}
+
+.doc-content h1 { 
+    border-bottom: 1px solid #475569; 
+    padding-bottom: 10px; 
+}
+
+.doc-content code { background: rgba(15, 23, 42, 0.6); padding: 2px 6px; border-radius: 4px; font-family: monospace; color: #22d3ee; }
+.doc-content pre { background: #0f172a; padding: 15px; border-radius: 8px; overflow-x: auto; margin: 15px 0; }
+.doc-content pre code { background: none; padding: 0; color: inherit; }
+.doc-content img { max-width: 100%; border-radius: 8px; border: 1px solid #475569; margin: 20px 0; }
+.doc-content blockquote { border-left: 4px solid #22d3ee; padding-left: 15px; margin-left: 0; color: #94a3b8; }
+
+.doc-content ul, .doc-content ol {
+            margin-left: 20px;   /* Rétablit l'indentation */
+            padding-left: 10px;  /* Espace pour les puces */
+            margin-bottom: 16px;
+        }
+.doc-content li {
+    margin-bottom: 4px;
+}
+/* Gestion des sous-listes (niveaux imbriqués) */
+.doc-content ul ul, .doc-content ol ol {
+    margin-top: 6px;
+    margin-bottom: 6px;
+        }

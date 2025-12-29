@@ -7,7 +7,7 @@ L'application se lance par défaut sur le port 5000. Pour changer ce port, veuil
 
 Lors du tout premier lancement de l'application, vous serez automatiquement redirigé vers la page de création du compte administrateur.
 
-![Page de création du compte administrateur]
+![Image page d'enregistrement](/static/docs/register.png)
 
 - **Préfixe API :** Définissez le préfixe de base pour toutes vos routes (par défaut : bashapi).
 
@@ -25,7 +25,7 @@ Lors de sa création l'application est crée en mode "Whitelist". Plus de détai
 
 Une fois connecté, vous arrivez sur le tableau de bord principal. C'est ici que vous gérez vos endpoints.
 
-![Tableau de bord principal avec la liste des routes]
+![Image page principale](/static/docs/dashboard.png)
 
 - **Statistiques :** Vue rapide sur le nombre de routes actives et inactives.
 

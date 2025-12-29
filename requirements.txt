@@ -3,3 +3,4 @@ gunicorn
 werkzeug
 flask_login
 python-dotenv
+markdown

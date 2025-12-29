@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API-Bash Bridge - Docs</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='docs.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="/" class="logo-link" style="text-decoration: none;">
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="5" width="17" height="14" rx="2" stroke="#22d3ee" stroke-width="2"/>
+                    <path d="M7 10L9 12L7 14" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 14H16" stroke="#22d3ee" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span>API-Bash Bridge</span>
+            </div>
+            </a>
+        </div>
+        
+        <div class="nav-center">
+            <a href="/" class="nav-link">Dashboard</a>
+            <a href="/settings" class="nav-link">Paramètres</a>
+            <a href="/logout" class="nav-link">Déconnexion</a>
+            <a href="/docs" class="nav-link active">Documentation</a>
+        </div>
+
+        <button class="mobile-menu-toggle" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+      
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu">
+        <a href="/" class="mobile-nav-link">Dashboard</a>
+        <a href="/settings" class="mobile-nav-link">Paramètres</a>
+        <a href="/logout" class="mobile-nav-link">Déconnexion</a>
+        <a href="/docs" class="mobile-nav-link active">Documentation</a>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+            <div class="doc-content">
+                {{ content|safe }}
+            </div>
+        <footer style="font-size: 0.8em; color: #999; text-align: center;">
+            Version {{ config.APP_VERSION }}
+        </footer>
+
+    </main>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+        const mobileMenu = document.querySelector('.mobile-menu');
+        
+        mobileMenuToggle.addEventListener('click', function() {
+            this.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.navbar') && !event.target.closest('.mobile-menu')) {
+                mobileMenuToggle.classList.remove('active');
+                mobileMenu.classList.remove('active');
+            }
+        });
+
+    </script>
+</body>
+</html>
