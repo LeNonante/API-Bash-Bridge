@@ -2,7 +2,11 @@
 __pycache__/
 *.py[cod]
 *$py.class
+
+# json files used for configuration or data
 commandes.json
+whitelist.json
+blacklist.json
 # C extensions
 *.so
 
