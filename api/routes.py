@@ -27,7 +27,7 @@ def api_dynamique_path(full_path):
         with open('blacklist.json', 'r') as f:
             blacklist_data = json.load(f)
     except Exception as e:
-        current_app.logger.error(f"Erreur lecture blacklist.json : {str(e)}. Utilisation d'une liste vide.")
+        current_app.logger.warning(f"Erreur lecture blacklist.json : {str(e)}. Utilisation d'une liste vide.")
         blacklist_data = []
     
     blacklist_ips = []  # Liste des IPs en blacklist
@@ -60,11 +60,9 @@ def api_dynamique_path(full_path):
     # Ex: "monapi/test1/r1" -> "test1/r1"
     real_route_part = full_path[len(prefix)+1:].strip('/')
     for route in routes_data:
-        if route['active']:
-            route_path = route['path'].strip('/')
-            print(route_path, real_route_part)
-            if route_path == real_route_part and request.method.upper() == route['method']:
-                print('er')
+        route_path = route['path'].strip('/')
+        if route_path == real_route_part and request.method.upper() == route['method']:
+            if route['active']:
                 #On récupère le token d'authorization dans les headers
                 auth_header = request.headers.get('Authorization')
                 token_recu = None
@@ -98,4 +96,7 @@ def api_dynamique_path(full_path):
                 else:
                     current_app.logger.warning(f"[ECHEC] Pas de token fourni pour /{route_path} | IP: {request.remote_addr}")
                     return jsonify({"error": "Unauthorized"}), 401
+            else :
+                current_app.logger.warning(f"[ECHEC] Route inactive: /{route_path} | IP: {request.remote_addr}")
+                return jsonify({"error": "Service Unavailable"}), 503
     return jsonify({"error": "Not Found"}), 404
