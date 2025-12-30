@@ -301,6 +301,22 @@ def export_commands():
         return "Aucun fichier commandes.json à exporter", 404
     return send_file(commands_path, as_attachment=True, download_name="commandes.json")
 
+@app.route('/settings/export-whitelist', methods=["GET"])
+@login_required
+def export_whitelist():
+    commands_path = os.path.join(app.root_path, "whitelist.json")
+    if not os.path.exists(commands_path):
+        return "Aucun fichier whitelist.json à exporter", 404
+    return send_file(commands_path, as_attachment=True, download_name="whitelist.json")
+
+@app.route('/settings/export-blacklist', methods=["GET"])
+@login_required
+def export_blacklist():
+    commands_path = os.path.join(app.root_path, "blacklist.json")
+    if not os.path.exists(commands_path):
+        return "Aucun fichier blacklist.json à exporter", 404
+    return send_file(commands_path, as_attachment=True, download_name="blacklist.json")
+
 @app.route('/settings/export-logs', methods=["GET"])
 @login_required
 def export_logs():

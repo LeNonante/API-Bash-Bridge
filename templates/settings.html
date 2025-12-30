@@ -262,6 +262,7 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                        <a href="{{ url_for('export_whitelist') }}" class="btn-secondary" style="margin-top: 12px; display: inline-block;">Exporter la Whitelist</a>
                         {% else %}
                         <p style="color: #999; font-style: italic;">Aucune IP dans la whitelist</p>
                         {% endif %}
@@ -340,6 +341,7 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                        <a href="{{ url_for('export_blacklist') }}" class="btn-secondary" style="margin-top: 12px; display: inline-block;">Exporter la Blacklist</a>
                         {% else %}
                         <p style="color: #999; font-style: italic;">Aucune IP dans la blacklist</p>
                         {% endif %}
