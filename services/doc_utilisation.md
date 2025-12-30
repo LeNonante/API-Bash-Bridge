@@ -110,25 +110,24 @@ Le token est récupérable uniquement dans la page Éditer la route ou lors de l
 Accessible via le menu Paramètres.
 
 ![Image page de paramètres](/static/docs/settings.png)
-1. **Sauvegarde et Migration**
+
+#### 1. Sauvegarde et Migration
 
 - **Exporter commandes.json :** Télécharge un fichier JSON contenant toute votre configuration (routes, commandes, hash des tokens).
-
 - **Importer :** Permet de restaurer une configuration ou de la dupliquer sur un autre serveur.
 
-Attention : Seules les routes (avec commandes, token hashé, et état) sont exportées. Les listes (blacklist et whitelist) ne sont pas exportées.
+> **Attention :** Seules les routes (avec commandes, token hashé, et état) sont exportées. Les listes (blacklist et whitelist) ne sont pas exportées.
 
-2. **Logs et Audit**
+#### 2. Logs et Audit
 
 L'application enregistre toutes les tentatives d'accès.
 
 - **Exporter logs :** Télécharge le fichier api-activity.log. (Une archive ZIP peut remplacer le fichier de logs si plusieurs fichiers de logs existent).
-
 - **Les logs contiennent :** Date, IP source, Route appelée, Statut (Succès/Échec/Non autorisé) et un ID de requête unique pour le traçage.
 
 Les logs contiennet uniquement les tentatives d'accès à l'API, et non à l'interface.
 
-3. **Filtrage IP (Whitelist / Blacklist)**
+#### 3. Filtrage IP (Whitelist / Blacklist)
 
 Vous pouvez restreindre l'accès à l'API (et non à l'interface admin) selon l'adresse IP de l'appelant.
 
