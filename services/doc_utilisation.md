@@ -149,6 +149,8 @@ Vous pouvez restreindre l'accès à l'API (et non à l'interface admin) selon l'
 
 *Note : Vous pouvez ajouter une description pour chaque IP (ex: "Serveur Home Assistant") et les activer/désactiver individuellement via un interrupteur.*
 
+Tout comme les commandes, il est possible d'exporter et importer un fichier de configuration de la blacklist et la whitelist.
+
 ### ⚠️ Bonnes Pratiques
 
 - **Utilisateur Système :** Les commandes Bash sont exécutées avec les permissions de l'utilisateur Linux qui a lancé le service api-bash-bridge. Évitez de lancer l'application en tant que root.
