@@ -166,11 +166,14 @@ def login():
             # Traitement du formulaire d'inscription
             password = request.form.get("password")
             if checkAdminPassword(password):
-                #session.permanent = True  # Rendre la session permanente (12h définies plus haut)
+                if A2F_enabled:
+                    code_2fa = request.form.get("2fa_code")
+                    if not verify_code(code_2fa):
+                        return render_template('login.html', erreur="Code 2FA incorrect.", A2F_enabled=A2F_enabled)
                 login_user(User("admin"))
                 return redirect(url_for('index'))  # Rediriger vers la page d'accueil après la connexion
             else:
-                return render_template('login.html', erreur="Mot de passe administrateur incorrect.")
+                return render_template('login.html', erreur="Mot de passe administrateur incorrect.", A2F_enabled=A2F_enabled)
             
     return render_template('login.html', A2F_enabled=A2F_enabled)
 
