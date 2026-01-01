@@ -247,10 +247,8 @@
                         Mettre à jour le mode
                     </button>
                 </form>
-            </div>
             {% if current_mode == 'WHITELIST' %}
-                <div class="login-card settings-card">
-                    <h2>Gestion de la Whitelist</h2>
+                    <h2 style="margin-top: 24px;">Gestion de la Whitelist</h2>
                     <p class="description">Gérez les IPs autorisées à accéder à l'API en mode Whitelist.</p>
 
                     {% if import_whitelist_error %}
@@ -344,12 +342,10 @@
                             <button class="btn-primary" type="submit">Importer le fichier</button>
                         </form>
                     </div>
-                </div>
             {% endif %}
 
             {% if current_mode == 'BLACKLIST' %}
-                <div class="login-card settings-card">
-                    <h2>Gestion de la Blacklist</h2>
+                    <h2 style="margin-top: 24px;">Gestion de la Blacklist</h2>
                     <p class="description">Gérez les IPs interdites d'accès à l'API en mode Blacklist.</p>
 
                     {% if import_blacklist_error %}
@@ -445,9 +441,9 @@
                     </div>
                 </div>
             {% endif %}
-
-
+            </div>
         </div>
+
         <footer style="font-size: 0.8em; color: #999; text-align: center;">
             Version {{ config.APP_VERSION }}
         </footer>
