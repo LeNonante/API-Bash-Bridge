@@ -15,6 +15,8 @@ Lors du tout premier lancement de l'application, vous serez automatiquement redi
 
 - **Mot de passe Administrateur :** Choisissez un mot de passe fort. Il servira uniquement à accéder à l'interface web.
 
+- **Activez l'authentification à deux facteur :** Affiche un code QR à scanner avec votre téléphone (sur une application de double authentification OTP) pour confirmer chaque connexion avec un code sécurisé en plus du mot de passe. L'option est également activable/désactivable plus tard.
+
 Cliquez sur Créer le compte.
 
 Lors de sa création l'application est crée en mode "Whitelist". Plus de détails dans la section "Paramètres et Sécurité -> Filtrage IP" 
@@ -111,14 +113,26 @@ Accessible via le menu Paramètres.
 
 ![Image page de paramètres](/static/docs/settings.png)
 
-#### 1. Sauvegarde et Migration
+#### 1. Changement du mot de passe administrateur
+
+- La demande d'un nouveau mot de passe administrateur requiert la vérification du mot de passe actuel.
+
+#### 2. Gestion de la double authentification (A2F/OTP)
+
+- **Activation de l'A2F :** Si l'A2F est désactivée, il est possible de l'activer. Le QR code à scanner avec une application d'authentification apparait. Veillez à le scanner avant de recharger la page, car il disparaitra.
+
+- **Régénération du code :** Il est possible de demander un nouveau code d'A2F, pour invalider l'ancien. Cette action requiert la validation du mot de passe administrateur.
+
+- **Désactivation de l'A2F :** Si l'A2F est activée, il est possible de la désactiver. Cette action requiert la validation du mot de passe administrateur.
+
+#### 3. Sauvegarde et Migration
 
 - **Exporter commandes.json :** Télécharge un fichier JSON contenant toute votre configuration (routes, commandes, hash des tokens).
 - **Importer :** Permet de restaurer une configuration ou de la dupliquer sur un autre serveur.
 
-> **Attention :** Seules les routes (avec commandes, token hashé, et état) sont exportées. Les listes (blacklist et whitelist) ne sont pas exportées.
+> **Attention :** Seules les routes (avec commandes, token hashé, et état) sont exportées. Les listes (blacklist et whitelist) ne sont pas exportées ici (voir plus bas).
 
-#### 2. Logs et Audit
+#### 4. Logs et Audit
 
 L'application enregistre toutes les tentatives d'accès.
 
@@ -127,7 +141,7 @@ L'application enregistre toutes les tentatives d'accès.
 
 Les logs contiennet uniquement les tentatives d'accès à l'API, et non à l'interface.
 
-#### 3. Filtrage IP (Whitelist / Blacklist)
+#### 5. Filtrage IP (Whitelist / Blacklist)
 
 Vous pouvez restreindre l'accès à l'API (et non à l'interface admin) selon l'adresse IP de l'appelant.
 

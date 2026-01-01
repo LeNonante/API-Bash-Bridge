@@ -20,7 +20,13 @@
 .doc-content code { background: rgba(15, 23, 42, 0.6); padding: 2px 6px; border-radius: 4px; font-family: monospace; color: #22d3ee; }
 .doc-content pre { background: #0f172a; padding: 15px; border-radius: 8px; overflow-x: auto; margin: 15px 0; }
 .doc-content pre code { background: none; padding: 0; color: inherit; }
-.doc-content img { max-width: 100%; border-radius: 8px; border: 1px solid #475569; margin: 20px 0; }
+.doc-content img { 
+    max-width: 100%; 
+    border-radius: 8px; 
+    border: 1px solid #475569; 
+    margin: 20px auto; 
+    display: block;
+}
 .doc-content blockquote { border-left: 4px solid #22d3ee; padding-left: 15px; margin-left: 0; color: #94a3b8; }
 
 .doc-content ul, .doc-content ol {
