@@ -3,6 +3,8 @@ from dotenv import load_dotenv, set_key, dotenv_values
 from werkzeug.security import generate_password_hash, check_password_hash
 import subprocess
 import json
+import pyotp
+import qrcode
 
 def isThereASecretKey() :
     return os.getenv("SECRET_KEY") is not None
@@ -148,3 +150,23 @@ def update_ip_in_list(filename, ip_id, description=""):
             return False, "Erreur lors de la mise à jour"
     
     return False, "IP non trouvée"
+
+def create_qr_code(secret_key, email_utilisateur):
+    # On prépare les infos pour Google Authenticator
+    totp_auth = pyotp.TOTP(secret_key)
+    
+    # Création de l'URI (le lien qui contient la clé, le nom de l'app, et l'user)
+    uri = totp_auth.provisioning_uri( 
+        issuer_name="API-Bash Bridge"
+    )
+
+    img = qrcode.make(uri)
+    nom_fichier = "static/img/qrcode_2fa.png"
+    img.save(nom_fichier)
+    return nom_fichier
+
+def verify_code(secret_key, code_entre):
+    totp = pyotp.TOTP(secret_key)
+    # verify() retourne True ou False. 
+    # Il gère automatiquement la fenêtre de temps (actuel +/- 30 secondes)
+    return totp.verify(code_entre)
