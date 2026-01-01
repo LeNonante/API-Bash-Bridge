@@ -85,7 +85,19 @@ def api_dynamique_path(full_path):
                                         shell_command += " && " #On ajoute le séparateur entre les commandes
                                     shell_command += line_clean # On ajoute la commande nettoyée
                             try:
-                                subprocess.run(shell_command, shell=True, timeout=60) # Exécuter la commande shell avec un timeout de 60 secondes
+                                # Copier l'environnement actuel pour y ajouter des variables
+                                env_vars = os.environ.copy()
+
+                                # Injecter les paramètres d'URL (ex: ?dossier=test -> PARAM_DOSSIER=test)
+                                for key, value in request.args.items():
+                                    env_vars[f"PARAM_{key.upper()}"] = str(value)
+                                    
+                                # Injecter les paramètres JSON (si POST)    
+                                if request.is_json and request.json:
+                                    for key, value in request.json.items():
+                                        env_vars[f"PARAM_{key.upper()}"] = str(value)
+                                                                        
+                                subprocess.run(shell_command, shell=True, env=env_vars, timeout=60) # Exécuter la commande shell avec un timeout de 60 secondes
                                 return jsonify({"message": f"Commande exécutée: {stocked_command}"}), 200
                             except Exception as e:
                                 current_app.logger.error(f"Erreur execution bash: {str(e)}")

@@ -12,6 +12,7 @@ C'est l'outil idéal pour piloter un serveur, lancer des scripts de maintenance,
 
 * **Routing Dynamique :** Ajoutez ou modifiez des routes via une interface web moderne sans redémarrer le serveur.
 * **Gestion fine des liaisons :** Activez et désactivez des liaisons routes API / commandes en un seul clic.
+* **Paramètres Dynamiques :** Injectez des variables dans vos scripts (ex: noms de dossiers, utilisateurs) directement via l'URL ou un payload JSON.
 * **Sécurisé :**
     * Protection des routes sensibles via **Bearer Token** (hashé, jamais stocké en clair).
     * Interface d'administration protégée par un mot de passe (défini à la première connexion).
@@ -20,7 +21,17 @@ C'est l'outil idéal pour piloter un serveur, lancer des scripts de maintenance,
 * **Multi-OS :** Fonctionne sur **Linux** (idéal serveur) et **Windows** (dev/local).
 * **Prefix API Configurable :** Changez le préfixe de base (ex: `/api/v1`) depuis l'interface.
 * **Backup facile :** Exportez votre configuration en JSON et réimportez-la sur une autre instance en quelques secondes.
+---
 
+## 🚀 Exemple Rapide
+
+Créez une route `/creer-user` avec le script `adduser $PARAM_USER` et appelez-la ainsi :
+
+```bash
+curl -X POST http://localhost:5000/bashapi/creer-user \
+     -H "Authorization: Bearer VOTRE_TOKEN" \
+     -d '{"user": "nouveau_membre"}'
+```
 ---
 
 ## 🐧 Installation & Démarrage (Linux / Systemd)

@@ -84,6 +84,35 @@ En bas de la page d'édition :
 
 - **Supprimer la route :** Action irréversible.
 
+## 🔀 Paramètres Dynamiques
+
+Vous pouvez rendre vos scripts interactifs en leur passant des paramètres lors de l'appel API (via l'URL ou un corps JSON).
+
+### 1. Rédaction du script
+L'application convertit automatiquement les paramètres reçus en **variables d'environnement** :
+* Le nom du paramètre est mis en **majuscules**.
+* Le préfixe `PARAM_` est ajouté.
+
+**Exemple :** Si vous envoyez `nomdossier`, la variable sera `PARAM_NOMDOSSIER`.
+
+**Syntaxe selon votre OS :**
+* **Linux (Bash) :** Utilisez `$PARAM_VOTRE_VARIABLE` (ex: `mkdir "$PARAM_NOMDOSSIER"`)
+* **Windows (CMD) :** Utilisez `%PARAM_VOTRE_VARIABLE%` (ex: `mkdir "%PARAM_NOMDOSSIER%"`)
+
+### 2. Envoi des paramètres
+Vous pouvez passer les valeurs de deux manières lors de votre requête HTTP :
+
+* **Dans l'URL :**
+    `http://votre-serveur:PORT/bashapi/ma-route?nomdossier=projet_alpha`
+
+* **Dans le corps JSON (POST uniquement) :**
+    ```json
+    {
+      "nom": "projet_alpha"
+    }
+    ```
+
+
 ## 🔌 Comment appeler l'API
 
 Pour déclencher vos commandes depuis un outil externe, vous devez effectuer une requête HTTP avec les critères suivants :
@@ -99,7 +128,9 @@ Pour déclencher vos commandes depuis un outil externe, vous devez effectuer une
 Supposons une route /deploy avec le token mon_token.
 ```Bash
 curl -X POST http://votre-serveur:5000/bashapi/deploy \
-     -H "Authorization: Bearer mon_token"
+     -H "Authorization: Bearer mon_token" \
+     -H "Content-Type: application/json" \
+     -d '{"branche": "main", "version": "1.2.0"}'
 ```
 ### Où trouver le Token ?
 
