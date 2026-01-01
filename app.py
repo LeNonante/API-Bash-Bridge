@@ -17,6 +17,7 @@ import zipfile
 from io import BytesIO
 import ipaddress
 from markdown import markdown
+import time
 
 app = Flask(__name__)
 
@@ -193,6 +194,7 @@ def settings():
     context["current_mode"] = getMode()
     context["whitelist"] = load_ip_list(os.path.join(app.root_path, "whitelist.json"))
     context["blacklist"] = load_ip_list(os.path.join(app.root_path, "blacklist.json"))
+    context["a2f_enabled"] = is2FAEnabled()
     
     if request.method == "POST":
         action = request.form.get("action")
@@ -333,7 +335,48 @@ def settings():
             context["import_blacklist_success"] = "Fichier importé et sauvegardé."
             context["blacklist"] = load_ip_list(os.path.join(app.root_path, "blacklist.json"))
             return render_template('settings.html', **context)
-    
+        
+        if action == "manage2FA":
+            sub_action = request.form.get("sub_action")
+            current_password = request.form.get("current_password_2fa")
+
+            # Pour désactiver ou régénérer, on vérifie le mot de passe par sécurité
+            if sub_action in ["disable", "regenerate"]:
+                if not current_password or not checkAdminPassword(current_password):
+                    context["a2f_error"] = "Mot de passe incorrect. Impossible de modifier l'A2F."
+                    return render_template('settings.html', **context)
+
+            if sub_action == "enable":
+                # Générer un secret s'il n'existe pas ou utiliser l'existant
+                if not isThere2FASecret():
+                    secret = pyotp.random_base32()
+                    set2FASecret(".env", secret)
+                else:
+                    secret = get2FASecret() # On récupère via la fonction existante dans config.py
+                
+                create_qr_code(secret)
+                activate_2fa(".env", True)
+                context["a2f_success"] = "A2F Activée. Scannez le QR Code ci-dessous."
+                context["show_qrcode"] = True
+                
+            elif sub_action == "disable":
+                activate_2fa(".env", False)
+                context["a2f_success"] = "Authentification à deux facteurs désactivée."
+                
+            elif sub_action == "regenerate":
+                # On écrase l'ancien secret
+                secret = pyotp.random_base32()
+                set2FASecret(".env", secret)
+                create_qr_code(secret)
+                # On s'assure qu'elle est bien activée
+                activate_2fa(".env", True)
+                context["a2f_success"] = "Nouveau secret généré. Veuillez scanner le nouveau QR Code."
+                context["show_qrcode"] = True
+
+            # Mise à jour de l'état pour l'affichage
+            context["a2f_enabled"] = is2FAEnabled()
+            # Ajout d'un timestamp pour forcer le navigateur à recharger l'image du QR Code
+            context["qr_timestamp"] = int(time.time())
     return render_template('settings.html', **context)
 
 
