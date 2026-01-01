@@ -37,7 +37,9 @@ curl -X POST http://localhost:5000/bashapi/creer-user \
 ## 🐧 Installation & Démarrage (Linux / Systemd)
 L'application étant conçue pour piloter le système hôte, une installation "Bare Metal" via Systemd est recommandée plutôt que Docker.
 
-L'installation se fera dans `/opt/api-bash-bridge`.
+**Note sur le répertoire d'installation :** Par défaut, l'installation est prévue dans `/opt/api-bash-bridge`, conformément aux conventions pour les logiciels tiers. Vous restez libre d'installer l'application dans le répertoire de votre choix.
+
+⚠️ Attention : Si vous modifiez l'emplacement d'installation, vous devez mettre à jour les chemins dans le fichier `api-bash-bridge.service` (spécifiquement aux lignes 11, 12 et 20).
 
 ### 1. Prérequis
 Assurez-vous d'avoir `python3`, `pip` et `git` installés.
@@ -52,7 +54,7 @@ sudo chown -R VOTRE_USER:VOTRE_USER /opt/api-bash-bridge
 
 # 2. Clonage du projet
 cd /opt/api-bash-bridge
-git clone [https://github.com/LeNonante/Bash-API-Bridge.git](https://github.com/LeNonante/Bash-API-Bridge.git) .
+git clone https://github.com/LeNonante/API-Bash-Bridge.git .
 
 # 3. Installation des dépendances dans un environnement virtuel
 python3 -m venv venv
