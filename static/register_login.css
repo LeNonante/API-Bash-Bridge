@@ -229,18 +229,20 @@ footer {
 
 .otp-inputs {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     justify-content: center;
     margin-bottom: 24px;
 }
 
 .otp-input {
-    width: 44px;
-    height: 44px;
+    width: 38px !important;
+    min-width: 38px !important;
+    max-width: 38px !important;
+    height: 42px;
     text-align: center !important;
     font-size: 18px;
     font-weight: 600;
-    line-height: 44px;
+    line-height: 42px;
     padding: 0 !important;
     background: rgba(15, 23, 42, 0.6);
     border: 1px solid rgba(71, 85, 105, 0.6);
@@ -249,6 +251,7 @@ footer {
     transition: all 0.3s ease;
     -webkit-appearance: none;
     -moz-appearance: textfield;
+    flex: 0 0 38px;
 }
 
 .otp-input:focus {
