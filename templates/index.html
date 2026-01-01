@@ -47,12 +47,21 @@
 
     <!-- Main Content -->
     <main class="main-content">
+        {{ if update_available }}       
+        <button id="btn-update" class="btn-primary btn-update" onclick="lancerMiseAJour()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px">
+                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 12c0-5.5 4.5-10 10-10 4.1 0 7.6 2.5 9.1 6.1M22 12c0 5.5-4.5 10-10 10-4.1 0-7.6-2.5-9.1-6.1"/>
+            </svg>
+            Mise à jour disponible
+        </button>
+        {{ endif }}
         <div class="page-header">
             <div>
                 <h1>Routes API</h1>
                 <p class="page-description">Configurez les liens entre vos endpoints HTTP et les commandes système.</p>
                 <p class="page-description">Domaine des routes configurées : <code class="domain-code">{{request.host_url}}{{ api_prefix[1:] }}</code></p>
             </div>
+
             <a href="/route/new" style="text-decoration: none;">
             <button class="btn-primary">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
