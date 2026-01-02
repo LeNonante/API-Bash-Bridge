@@ -29,6 +29,8 @@ Une fois connecté, vous arrivez sur le tableau de bord principal. C'est ici que
 
 ![Image page principale](/static/docs/dashboard.png)
 
+- **Mises à jour :** Lorsqu'une nouvelle version de l'application est disponible, un bouton est visible. Cliquez dessus pour mettre à jour l'application.
+
 - **Statistiques :** Vue rapide sur le nombre de routes actives et inactives.
 
 - **Barre de recherche :** Filtrez vos routes par nom, méthode ou commande.

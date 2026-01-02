@@ -20,6 +20,7 @@ C'est l'outil idéal pour piloter un serveur, lancer des scripts de maintenance,
 * **Traçabilité :** Des fichiers de logs permettent de tracer chaque requêtes faites à l'API (avec un identifiant par requête ainsi que l'adresse IP de la source).
 * **Multi-OS :** Fonctionne sur **Linux** (idéal serveur) et **Windows** (dev/local).
 * **Prefix API Configurable :** Changez le préfixe de base (ex: `/api/v1`) depuis l'interface.
+* **Mises à jour :** Mettez l'application à jour automatiquement grâce au bouton qui apparait lorsqu'une nouvelle version est disponible. 
 * **Backup facile :** Exportez votre configuration en JSON et réimportez-la sur une autre instance en quelques secondes.
 ---
 
