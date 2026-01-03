@@ -16,6 +16,7 @@ C'est l'outil idéal pour piloter un serveur, lancer des scripts de maintenance,
 * **Sécurisé :**
     * Protection des routes sensibles via **Bearer Token** (hashé, jamais stocké en clair).
     * Interface d'administration protégée par un mot de passe (défini à la première connexion).
+    * **Protection Anti-Bruteforce :** Limitation automatique du nombre de tentatives de connexion et d'appels API (Rate Limiting).
     * **Support de l'Authentification à Deux Facteurs (A2F/OTP) :** Compatible avec Google Authenticator, Authy, etc.
 * **Traçabilité :** Des fichiers de logs permettent de tracer chaque requêtes faites à l'API (avec un identifiant par requête ainsi que l'adresse IP de la source).
 * **Multi-OS :** Fonctionne sur **Linux** (idéal serveur) et **Windows** (dev/local).

@@ -142,17 +142,17 @@ Le token est récupérable uniquement dans la page Éditer la route ou lors de l
 
 - **Sécurité :** Les tokens sont stockés de manière hachée (chiffrée) dans la base de données. Il est impossible de retrouver un token enregistré. Ainsi, lorsque vous copiez un token depuis la page d'édition d'une route, un nouveau token est généré ce qui invalide les anciens tokens de cette route. (Cela n'est pas le cas sur la page de création d'une route. Vous pouvez copier le token autant de fois que vous le souhaitez).
 
-### ⚙️ Paramètres et Sécurité
+## ⚙️ Paramètres et Sécurité
 
 Accessible via le menu Paramètres.
 
 ![Image page de paramètres](/static/docs/settings.png)
 
-#### 1. Changement du mot de passe administrateur
+### 1. Changement du mot de passe administrateur
 
 - La demande d'un nouveau mot de passe administrateur requiert la vérification du mot de passe actuel.
 
-#### 2. Gestion de la double authentification (A2F/OTP)
+### 2. Gestion de la double authentification (A2F/OTP)
 
 - **Activation de l'A2F :** Si l'A2F est désactivée, il est possible de l'activer. Le QR code à scanner avec une application d'authentification apparait. Veillez à le scanner avant de recharger la page, car il disparaitra.
 
@@ -160,14 +160,14 @@ Accessible via le menu Paramètres.
 
 - **Désactivation de l'A2F :** Si l'A2F est activée, il est possible de la désactiver. Cette action requiert la validation du mot de passe administrateur.
 
-#### 3. Sauvegarde et Migration
+### 3. Sauvegarde et Migration
 
 - **Exporter commandes.json :** Télécharge un fichier JSON contenant toute votre configuration (routes, commandes, hash des tokens).
 - **Importer :** Permet de restaurer une configuration ou de la dupliquer sur un autre serveur.
 
 > **Attention :** Seules les routes (avec commandes, token hashé, et état) sont exportées. Les listes (blacklist et whitelist) ne sont pas exportées ici (voir plus bas).
 
-#### 4. Logs et Audit
+### 4. Logs et Audit
 
 L'application enregistre toutes les tentatives d'accès.
 
@@ -176,7 +176,7 @@ L'application enregistre toutes les tentatives d'accès.
 
 Les logs contiennet uniquement les tentatives d'accès à l'API, et non à l'interface.
 
-#### 5. Filtrage IP (Whitelist / Blacklist)
+### 5. Filtrage IP (Whitelist / Blacklist)
 
 Vous pouvez restreindre l'accès à l'API (et non à l'interface admin) selon l'adresse IP de l'appelant.
 
@@ -199,6 +199,15 @@ Vous pouvez restreindre l'accès à l'API (et non à l'interface admin) selon l'
 *Note : Vous pouvez ajouter une description pour chaque IP (ex: "Serveur Home Assistant") et les activer/désactiver individuellement via un interrupteur.*
 
 Tout comme les commandes, il est possible d'exporter et importer un fichier de configuration de la blacklist et la whitelist.
+
+### 6. Protection Anti-Bruteforce (Rate Limiting)
+
+Pour protéger l'application contre les attaques par force brute et la surcharge, des limites de requêtes sont appliquées :
+
+- **Connexion Admin :** Maximum **5 tentatives par minute**. Au-delà, l'accès est bloqué temporairement.
+- **API :** Les appels aux routes API sont limités à **60 requêtes par minute** par IP (par défaut).
+
+En cas de dépassement, l'application renvoie une erreur HTTP **429 Too Many Requests**.
 
 ### ⚠️ Bonnes Pratiques
 
