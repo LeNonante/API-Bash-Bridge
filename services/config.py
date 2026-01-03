@@ -8,7 +8,8 @@ import qrcode
 import sys
 import time
 from filelock import FileLock
-
+from database.extensions import db
+from database.models import Route, AccessRule
 
 # Variables globales pour le cache
 LAST_CHECK_TIME = 0
@@ -333,3 +334,99 @@ def verify_and_save_list_file(file_storage, save_path):
         return False, "Le fichier fourni n'est pas un JSON valide."
     except Exception as e:
         return False, f"Erreur lors de l'import : {str(e)}"
+    
+    
+#SQL ALCHEMY FUNCTIONS---------------------------
+
+def get_commands():
+    # .all() récupère tout, c'est l'équivalent du JSON complet
+    routes = Route.query.all()
+    result = []
+    for r in routes:
+        result.append({
+            "command": r.command,
+            "description": r.description,
+            "hashed_token": r.hashed_token,
+            "id": r.id,
+            "active": r.is_active,
+            "path": r.path,
+            "tags": r.tags.split(',') if r.tags else [],
+            "method": r.method,
+            "return_output": r.return_output
+        })
+    return result
+
+def is_command_active(command_id):
+    route = Route.query.filter_by(id=command_id).first()
+    if route:
+        return route.is_active
+    return False
+
+def toggle_command_active(command_id):
+    route = Route.query.filter_by(id=command_id).first()
+    if route:
+        route.is_active = not route.is_active
+        db.session.commit()
+        return True
+    return False
+
+def set_command_hashed_token(command_id, token):
+    route = Route.query.filter_by(id=command_id).first()
+    if route:
+        route.hashed_token = token
+        db.session.commit()
+        return True
+    return False
+
+def get_command(command_id):
+    route = Route.query.filter_by(id=command_id).first()
+    if route:
+        return {
+            "command": route.command,
+            "description": route.description,
+            "hashed_token": route.hashed_token,
+            "id": route.id,
+            "active": route.is_active,
+            "path": route.path,
+            "tags": route.tags.split(',') if route.tags else [],
+            "method": route.method,
+            "return_output": route.return_output
+        }
+    return None
+
+def edit_command(new_route):
+    route = Route.query.filter_by(id=new_route["id"]).first()
+    if route:
+        route.path = new_route["path"]
+        route.command = new_route["command"]
+        route.description = new_route["description"]
+        route.is_active = new_route["active"]
+        route.hashed_token = new_route["hashed_token"]
+        route.return_output = new_route["return_output"]
+        route.tags = ','.join(new_route["tags"]) if isinstance(new_route["tags"], list) else new_route["tags"]
+        db.session.commit()
+        return True
+    return False
+
+def add_command(new_route):
+    route = Route(
+        path=new_route["path"],
+        method=new_route["method"],
+        command=new_route["command"],
+        description=new_route["description"],
+        is_active=new_route["active"],
+        hashed_token=new_route["hashed_token"],
+        return_output=new_route["return_output"],
+        tags=','.join(new_route["tags"]) if isinstance(new_route["tags"], list) else new_route["tags"]
+    )
+    db.session.add(route)
+    db.session.commit()
+    return route.id
+
+def delete_command(command_id):
+    route = Route.query.filter_by(id=command_id).first()
+    if route:
+        db.session.delete(route)
+        db.session.commit()
+        return True
+    return False

@@ -11,3 +11,4 @@ Flask-WTF
 flask-talisman
 filelock
 flask-limiter
+flask-sqlalchemy
