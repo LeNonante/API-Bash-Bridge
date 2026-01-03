@@ -9,3 +9,4 @@ pyotp
 Pillow
 Flask-WTF
 flask-talisman
+filelock

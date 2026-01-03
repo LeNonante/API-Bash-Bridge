@@ -21,6 +21,7 @@ import time
 import sys
 from flask_wtf.csrf import CSRFProtect
 from flask_talisman import Talisman
+from filelock import FileLock
 
 app = Flask(__name__)
 csrf = CSRFProtect(app) # Active la protection sur toute l'app. Permet d'ajouter des tokens CSRF uniques dans les formulaires.
@@ -126,10 +127,29 @@ def load_user(user_id):
 @app.route('/')
 @login_required
 def index():
-    routes=json.load(open(os.path.join(app.root_path, "commandes.json"),"r",encoding="utf-8"))
+    file_path = os.path.join(app.root_path, "commandes.json")
+    lock_path = file_path + ".lock"
+    
+    routes = []
+    
+    try:
+        # On verrouille aussi en lecture pour attendre la fin des écritures en cours
+        with FileLock(lock_path, timeout=5):
+            if os.path.exists(file_path):
+                with open(file_path, "r", encoding="utf-8") as f:
+                    routes = json.load(f)
+            else:
+                routes = []
+    except Exception as e:
+        app.logger.error(f"Erreur lecture index: {e}")
+        # En cas d'erreur critique, on garde routes = [] pour ne pas crasher
+
     nb_etats={False:0,True:0}
     for route in routes:
-        nb_etats[route["active"]]+=1
+        # Petite sécurité au cas où le fichier JSON serait malformé
+        if "active" in route:
+            nb_etats[route["active"]]+=1
+            
     return render_template('index.html', routes=routes, api_prefix=getApiPrefix(), total_routes=len(routes), active_routes=nb_etats[True], inactive_routes=nb_etats[False])
 
 
@@ -201,11 +221,24 @@ def settings():
     context = {}
     context["api_prefix"] = getApiPrefix()[:-1]
     context["current_mode"] = getMode()
-    context["whitelist"] = load_ip_list(os.path.join(app.root_path, "whitelist.json"))
-    context["blacklist"] = load_ip_list(os.path.join(app.root_path, "blacklist.json"))
+    # Verrouillage pour lire la whitelist
+    lock_whitelist = os.path.join(app.root_path, "whitelist.json.lock")
+    try:
+        with FileLock(lock_whitelist, timeout=5):
+            context["whitelist"] = load_ip_list(os.path.join(app.root_path, "whitelist.json"))
+    except Exception:
+        context["whitelist"] = []
+    # Verrouillage pour lire la blacklist
+    lock_blacklist = os.path.join(app.root_path, "blacklist.json.lock")
+    try:
+        with FileLock(lock_blacklist, timeout=5):
+            context["blacklist"] = load_ip_list(os.path.join(app.root_path, "blacklist.json"))
+    except Exception:
+        context["blacklist"] = []
     context["a2f_enabled"] = is2FAEnabled()
     
     if request.method == "POST":
+        # Ici, on ne met PAS de verrou, car les fonctions appelées le font déjà.
         action = request.form.get("action")
         
         if action == "changePassword":
@@ -409,25 +442,75 @@ def settings():
 @login_required
 def export_commands():
     commands_path = os.path.join(app.root_path, "commandes.json")
+    lock_path = commands_path + ".lock"
+
     if not os.path.exists(commands_path):
         return "Aucun fichier commandes.json à exporter", 404
-    return send_file(commands_path, as_attachment=True, download_name="commandes.json")
+
+    # On lit tout le contenu binaire en mémoire PENDANT que le fichier est verrouillé
+    try:
+        with FileLock(lock_path, timeout=5):
+            with open(commands_path, "rb") as f:
+                file_content = f.read()
+    except Exception as e:
+        app.logger.error(f"Erreur export commandes: {e}")
+        return "Erreur lors de la lecture du fichier", 500
+
+    # On renvoie le contenu depuis la mémoire (le verrou est déjà relâché ici)
+    return send_file(
+        BytesIO(file_content),
+        mimetype='application/json',
+        as_attachment=True,
+        download_name="commandes.json"
+    )
 
 @app.route('/settings/export-whitelist', methods=["GET"])
 @login_required
 def export_whitelist():
-    commands_path = os.path.join(app.root_path, "whitelist.json")
-    if not os.path.exists(commands_path):
+    whitelist_path = os.path.join(app.root_path, "whitelist.json")
+    lock_path = whitelist_path + ".lock"
+
+    if not os.path.exists(whitelist_path):
         return "Aucun fichier whitelist.json à exporter", 404
-    return send_file(commands_path, as_attachment=True, download_name="whitelist.json")
+
+    try:
+        with FileLock(lock_path, timeout=5):
+            with open(whitelist_path, "rb") as f:
+                file_content = f.read()
+    except Exception as e:
+        app.logger.error(f"Erreur export whitelist: {e}")
+        return "Erreur lors de la lecture du fichier", 500
+
+    return send_file(
+        BytesIO(file_content),
+        mimetype='application/json',
+        as_attachment=True,
+        download_name="whitelist.json"
+    )
 
 @app.route('/settings/export-blacklist', methods=["GET"])
 @login_required
 def export_blacklist():
-    commands_path = os.path.join(app.root_path, "blacklist.json")
-    if not os.path.exists(commands_path):
+    blacklist_path = os.path.join(app.root_path, "blacklist.json")
+    lock_path = blacklist_path + ".lock"
+
+    if not os.path.exists(blacklist_path):
         return "Aucun fichier blacklist.json à exporter", 404
-    return send_file(commands_path, as_attachment=True, download_name="blacklist.json")
+
+    try:
+        with FileLock(lock_path, timeout=5):
+            with open(blacklist_path, "rb") as f:
+                file_content = f.read()
+    except Exception as e:
+        app.logger.error(f"Erreur export blacklist: {e}")
+        return "Erreur lors de la lecture du fichier", 500
+
+    return send_file(
+        BytesIO(file_content),
+        mimetype='application/json',
+        as_attachment=True,
+        download_name="blacklist.json"
+    )
 
 @app.route('/settings/export-logs', methods=["GET"])
 @login_required
@@ -458,14 +541,17 @@ def toggle_route():
     except ValueError:
         return redirect(url_for('index'))
 
-    routes = json.load(open(os.path.join(app.root_path, "commandes.json"), "r", encoding="utf-8"))
-    for route in routes:
-        if route["id"] == route_id:
-            route["active"] = not route["active"]
-            break
+    commands_path = os.path.join(app.root_path, "commandes.json")
+    lock_path = commands_path + ".lock"  # Créera commandes.json.lock
+    with FileLock(lock_path, timeout=10):
+        routes = json.load(open(commands_path, "r", encoding="utf-8"))
+        for route in routes:
+            if route["id"] == route_id:
+                route["active"] = not route["active"]
+                break
 
-    with open(os.path.join(app.root_path, "commandes.json"), "w", encoding="utf-8") as f:
-        json.dump(routes, f, indent=4, ensure_ascii=False)
+        with open(os.path.join(app.root_path, "commandes.json"), "w", encoding="utf-8") as f:
+            json.dump(routes, f, indent=4, ensure_ascii=False)
 
     return redirect(url_for('index'))
 
@@ -474,8 +560,15 @@ def toggle_route():
 @login_required
 def edit_route(route_id):
     commands_path = os.path.join(app.root_path, "commandes.json")
+    lock_path = commands_path + ".lock"
     api_prefix = getApiPrefix()
-    routes = json.load(open(commands_path, "r", encoding="utf-8"))
+    
+    try:
+        with FileLock(lock_path, timeout=5):
+            with open(commands_path, "r", encoding="utf-8") as f:
+                routes = json.load(f)
+    except:
+        routes = []
     
     route = next((r for r in routes if r["id"] == route_id), None)
     if not route:
@@ -485,7 +578,6 @@ def edit_route(route_id):
     
     if request.method == "POST":
         action = request.form.get("action")
-        print(action)
         if action == "save":
             
             clean_path = request.form.get("path").strip('/').replace(" ", "") #On enlève les slashs de début et fin et les espaces
@@ -494,12 +586,28 @@ def edit_route(route_id):
             if not re.match(pattern_path_route, clean_path):
                 context["error"] = "Le chemin de la route contient des caractères invalides. Seules les lettres (min, maj), chiffres, tirets (-), underscores (_) et slashs (/) sont autorisés."
                 return render_template('edit_route.html', **context)
+            
+            with FileLock(lock_path, timeout=10):
+                # On RELIT le fichier pour être sûr d'avoir la version la plus récente
+                with open(commands_path, "r", encoding="utf-8") as f:
+                    routes = json.load(f)
+                
+                # On retrouve la route dans la liste fraîchement chargée
+                route_to_edit = next((r for r in routes if r["id"] == route_id), None)
+                if route_to_edit:
+                    route_to_edit["path"] = clean_path
+                    route_to_edit["method"] = request.form.get("method")
+                    route_to_edit["description"] = request.form.get("description")
+                    route_to_edit["command"] = request.form.get("command")
+                    
+                    with open(commands_path, "w", encoding="utf-8") as f:
+                        json.dump(routes, f, indent=4, ensure_ascii=False)
+            
+            
             route["path"] = clean_path
             route["method"] = request.form.get("method")
             route["description"] = request.form.get("description")
-            route["command"] = request.form.get("command")
-            with open(commands_path, "w", encoding="utf-8") as f:
-                json.dump(routes, f, indent=4, ensure_ascii=False)
+            route["command"] = request.form.get("command")         
             
             context["success"] = "Route sauvegardée avec succès."
             return render_template('edit_route.html', **context)
@@ -546,17 +654,31 @@ def edit_route(route_id):
         elif action == "generate_token":
             token=request.form.get("token_value")
             hashed_token=generate_password_hash(token)
+            with FileLock(lock_path, timeout=10):
+                # 1. On relit pour avoir la version à jour
+                with open(commands_path, "r", encoding="utf-8") as f:
+                    routes = json.load(f)
+                
+                # 2. On retrouve la route et on modifie
+                route_to_edit = next((r for r in routes if r["id"] == route_id), None)
+                if route_to_edit:
+                    route_to_edit["hashed_token"] = hashed_token
+                    
+                    # 3. On sauvegarde
+                    with open(commands_path, "w", encoding="utf-8") as f:
+                        json.dump(routes, f, indent=4, ensure_ascii=False)
+            
+            # Mise à jour de l'objet local pour l'affichage (optionnel ici car on recharge la page souvent, mais propre)
             route["hashed_token"] = hashed_token
-            with open(commands_path, "w", encoding="utf-8") as f:
-                json.dump(routes, f, indent=4, ensure_ascii=False)
+            return render_template('edit_route.html', **context)
     return render_template('edit_route.html', **context)
-
+    
 @app.route('/route/new', methods=["POST", "GET"])
 @login_required
 def create_route():
     if request.method == "POST":
         commands_path = os.path.join(app.root_path, "commandes.json")
-        routes = json.load(open(commands_path, "r", encoding="utf-8"))
+        lock_path = commands_path + ".lock"
         path=request.form.get("path").strip('/').replace(" ", "") #On enlève les slashs de début et fin et les espaces
         path = re.sub(r'/+', '/', path) #Remplacement des blocs de slash (// ou /// par exemple) par un seul slash
         
@@ -572,14 +694,22 @@ def create_route():
         if not re.match(pattern_path_route, path):
             error = "Le chemin de la route contient des caractères invalides. Seules les lettres (min, maj), chiffres, tirets (-), underscores (_) et slashs (/) sont autorisés."
             return render_template('new_route.html', api_prefix=getApiPrefix(), new_token=request.form.get("token_value"), error=error, **request.form)
-        new_id = max((route["id"] for route in routes), default=0) + 1
-        new_route["id"] = new_id
-        routes.append(new_route)
         
-        with open(commands_path, "w", encoding="utf-8") as f:
-            json.dump(routes, f, indent=4, ensure_ascii=False)
-        
+        with FileLock(lock_path, timeout=10):
+            # 1. Lecture
+            with open(commands_path, "r", encoding="utf-8") as f:
+                routes = json.load(f)
+            
+            # 2. Calcul ID et Ajout
+            new_id = max((route["id"] for route in routes), default=0) + 1
+            new_route["id"] = new_id
+            routes.append(new_route)
+            
+            # 3. Écriture
+            with open(commands_path, "w", encoding="utf-8") as f:
+                json.dump(routes, f, indent=4, ensure_ascii=False)
         return redirect(url_for('edit_route', route_id=new_id))
+
     else :
         token=secrets.token_urlsafe(32)    
         return render_template('new_route.html', api_prefix=getApiPrefix(), new_token=token)
@@ -589,13 +719,15 @@ def create_route():
 @login_required
 def delete_route(route_id):
     commands_path = os.path.join(app.root_path, "commandes.json")
-    routes = json.load(open(commands_path, "r", encoding="utf-8"))
-    
-    routes = [r for r in routes if r["id"] != route_id]
-    
-    with open(commands_path, "w", encoding="utf-8") as f:
-        json.dump(routes, f, indent=4, ensure_ascii=False)
-    
+    lock_path = commands_path + ".lock"  # Créera commandes.json.lock
+    with FileLock(lock_path, timeout=10):
+        routes = json.load(open(commands_path, "r", encoding="utf-8"))
+        
+        routes = [r for r in routes if r["id"] != route_id]
+        
+        with open(commands_path, "w", encoding="utf-8") as f:
+            json.dump(routes, f, indent=4, ensure_ascii=False)
+        
     return redirect(url_for('index'))
 
 @app.route('/docs')

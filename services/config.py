@@ -7,6 +7,8 @@ import pyotp
 import qrcode
 import sys
 import time
+from filelock import FileLock
+
 
 # Variables globales pour le cache
 LAST_CHECK_TIME = 0
@@ -152,61 +154,69 @@ def save_ip_list(filename, ip_list):
 
 def add_ip_to_list(filename, ip, description=""):
     """Ajoute une IP à la liste"""
-    ip_list = load_ip_list(filename)
-    
-    # Vérifier que l'IP n'existe pas déjà
-    if any(item['ip'] == ip for item in ip_list):
-        return False, "Cette IP existe déjà"
-    
-    # Créer le nouvel ID
-    new_id = max((item.get('id', 0) for item in ip_list), default=0) + 1
-    
-    new_item = {
-        "ip": ip,
-        "description": description,
-        "active": True,
-        "id": new_id
-    }
-    
-    ip_list.append(new_item)
-    if save_ip_list(filename, ip_list):
-        return True, "IP ajoutée avec succès"
-    return False, "Erreur lors de l'ajout"
+    lock_path = filename + ".lock"  # Créera whitelist.json.lock
+    with FileLock(lock_path, timeout=10):
+        ip_list = load_ip_list(filename)
+        
+        # Vérifier que l'IP n'existe pas déjà
+        if any(item['ip'] == ip for item in ip_list):
+            return False, "Cette IP existe déjà"
+        
+        # Créer le nouvel ID
+        new_id = max((item.get('id', 0) for item in ip_list), default=0) + 1
+        
+        new_item = {
+            "ip": ip,
+            "description": description,
+            "active": True,
+            "id": new_id
+        }
+        
+        ip_list.append(new_item)
+        if save_ip_list(filename, ip_list):
+            return True, "IP ajoutée avec succès"
+        return False, "Erreur lors de l'ajout"
 
 def remove_ip_from_list(filename, ip_id):
     """Supprime une IP de la liste"""
-    ip_list = load_ip_list(filename)
-    ip_list = [item for item in ip_list if item['id'] != ip_id]
-    
-    if save_ip_list(filename, ip_list):
-        return True, "IP supprimée avec succès"
-    return False, "Erreur lors de la suppression"
+    lock_path = filename + ".lock"  # Créera whitelist.json.lock
+    with FileLock(lock_path, timeout=10):
+        ip_list = load_ip_list(filename)
+        ip_list = [item for item in ip_list if item['id'] != ip_id]
+        
+        if save_ip_list(filename, ip_list):
+            return True, "IP supprimée avec succès"
+        return False, "Erreur lors de la suppression"
 
 def toggle_ip_in_list(filename, ip_id):
     """Active/désactive une IP dans la liste"""
-    ip_list = load_ip_list(filename)
-    
-    for item in ip_list:
-        if item['id'] == ip_id:
-            item['active'] = not item['active']
-            if save_ip_list(filename, ip_list):
-                return True, item['active']
-            return False, None
-    
-    return False, None
+    lock_path = filename + ".lock"  # Créera whitelist.json.lock
+    with FileLock(lock_path, timeout=10):
+        ip_list = load_ip_list(filename)
+        
+        for item in ip_list:
+            if item['id'] == ip_id:
+                item['active'] = not item['active']
+                if save_ip_list(filename, ip_list):
+                    return True, item['active']
+                return False, None
+        
+        return False, None
 
 def update_ip_in_list(filename, ip_id, description=""):
     """Met à jour la description d'une IP"""
-    ip_list = load_ip_list(filename)
-    
-    for item in ip_list:
-        if item['id'] == ip_id:
-            item['description'] = description
-            if save_ip_list(filename, ip_list):
-                return True, "IP mise à jour avec succès"
-            return False, "Erreur lors de la mise à jour"
-    
-    return False, "IP non trouvée"
+    lock_path = filename + ".lock"  # Créera whitelist.json.lock
+    with FileLock(lock_path, timeout=10):
+        ip_list = load_ip_list(filename)
+        
+        for item in ip_list:
+            if item['id'] == ip_id:
+                item['description'] = description
+                if save_ip_list(filename, ip_list):
+                    return True, "IP mise à jour avec succès"
+                return False, "Erreur lors de la mise à jour"
+        
+        return False, "IP non trouvée"
 
 def create_qr_code(secret_key):
     # On prépare les infos pour Google Authenticator
@@ -253,6 +263,7 @@ def verify_and_save_commands_file(file_storage, save_path):
     Vérifie et sauvegarde le fichier de commandes.
     Retourne (Succès: bool, Message: str)
     """
+    lock_path = save_path + ".lock" # <--- AJOUT
     try:
         # On charge le JSON en mémoire pour vérifier sa validité
         data = json.load(file_storage)
@@ -272,10 +283,11 @@ def verify_and_save_commands_file(file_storage, save_path):
                 missing = required_keys - item.keys()
                 return False, f"Format invalide à l'index {index}. Clés manquantes: {missing}"
 
-        # Si tout est bon, on sauvegarde proprement le fichier
+        # Si tout est bon, on sauvegarde proprement le fichier en le vérouillant pendant l'écriture
         # (Cela permet aussi de reformater le JSON correctement avec l'indentation)
-        with open(save_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=4, ensure_ascii=False)
+        with FileLock(lock_path, timeout=10):
+            with open(save_path, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=4, ensure_ascii=False)
             
         return True, "Configuration importée et validée avec succès."
         
@@ -289,6 +301,7 @@ def verify_and_save_list_file(file_storage, save_path):
     Vérifie et sauvegarde un fichier de liste (black/whitelist).
     Retourne (Succès: bool, Message: str)
     """
+    lock_path = save_path + ".lock"
     try:
         # On charge le JSON en mémoire pour vérifier sa validité
         data = json.load(file_storage)
@@ -308,10 +321,11 @@ def verify_and_save_list_file(file_storage, save_path):
                 missing = required_keys - item.keys()
                 return False, f"Format invalide à l'index {index}. Clés manquantes: {missing}"
 
-        # Si tout est bon, on sauvegarde proprement le fichier
+        # Si tout est bon, on sauvegarde proprement le fichier en le vérouillant pendant l'écriture
         # (Cela permet aussi de reformater le JSON correctement avec l'indentation)
-        with open(save_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=4, ensure_ascii=False)
+        with FileLock(lock_path, timeout=10):
+            with open(save_path, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=4, ensure_ascii=False)
             
         return True, "Configuration importée et validée avec succès."
         
