@@ -61,6 +61,7 @@
                 <p class="description">Saisissez votre ancien mot de passe, puis le nouveau (deux fois) pour confirmer.</p>
 
                 <form method="post">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <input type="hidden" name="action" value="changePassword">
                     <div class="form-group">
                         <label for="current_password">Ancien mot de passe</label>
@@ -122,6 +123,7 @@
                 {% endif %}
 
                 <form method="post">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <input type="hidden" name="action" value="manage2FA">
                     
                     {% if a2f_enabled %}
@@ -157,6 +159,7 @@
                 <p class="description">Changez le préfixe utilisé pour les appels API.</p>
                 <p class="description">Ancien préfixe : {{ api_prefix }}</p>
                 <form method="post">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <input type="hidden" name="action" value="changeApiPrefix">
                     <div class="form-group">
                         <label for="new_prefix">Nouveau préfixe API (sans '/')</label>
@@ -193,6 +196,7 @@
                 {% endif %}
 
                 <form method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <input type="hidden" name="action" value="importCommands">
                     <div class="form-group">
                         <label for="commands_file">Importer un fichier JSON</label>
@@ -219,6 +223,7 @@
                 <p class="description">Sélectionnez le mode de sécurité pour les accès API.</p>
 
                 <form method="post">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <input type="hidden" name="action" value="changeMode">
                     <div class="form-group">
                         <label for="mode">Mode actuel : <strong>{{ current_mode }}</strong></label>
@@ -259,6 +264,7 @@
                     {% endif %}
 
                     <form method="post" style="margin-bottom: 24px;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <input type="hidden" name="action" value="addIp">
                         <input type="hidden" name="list_type" value="whitelist">
                         <div class="form-group">
@@ -303,6 +309,7 @@
                                     <td style="padding: 12px 8px;">{{ ip_item.description or '-' }}</td>
                                     <td style="text-align: center; padding: 12px 8px;">
                                         <form method="post" style="display: inline;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                             <input type="hidden" name="action" value="toggleIp">
                                             <input type="hidden" name="list_type" value="whitelist">
                                             <input type="hidden" name="ip_id" value="{{ ip_item.id }}">
@@ -314,6 +321,7 @@
                                     </td>
                                     <td style="text-align: center; padding: 12px 8px;">
                                         <form method="post" style="display: inline;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                             <input type="hidden" name="action" value="removeIp">
                                             <input type="hidden" name="list_type" value="whitelist">
                                             <input type="hidden" name="ip_id" value="{{ ip_item.id }}">
@@ -332,6 +340,7 @@
                         <hr style="margin: 24px 0; border: none; border-top: 1px solid #e0e0e0;">
 
                         <form method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <input type="hidden" name="action" value="importWhitelist">
                             <div class="form-group">
                                 <label for="whitelist_file">Importer un fichier JSON</label>
@@ -356,6 +365,7 @@
                     {% endif %}
 
                     <form method="post" style="margin-bottom: 24px;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <input type="hidden" name="action" value="addIp">
                         <input type="hidden" name="list_type" value="blacklist">
                         <div class="form-group">
@@ -400,6 +410,7 @@
                                     <td style="padding: 12px 8px;">{{ ip_item.description or '-' }}</td>
                                     <td style="text-align: center; padding: 12px 8px;">
                                         <form method="post" style="display: inline;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                             <input type="hidden" name="action" value="toggleIp">
                                             <input type="hidden" name="list_type" value="blacklist">
                                             <input type="hidden" name="ip_id" value="{{ ip_item.id }}">
@@ -411,6 +422,7 @@
                                     </td>
                                     <td style="text-align: center; padding: 12px 8px;">
                                         <form method="post" style="display: inline;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                             <input type="hidden" name="action" value="removeIp">
                                             <input type="hidden" name="list_type" value="blacklist">
                                             <input type="hidden" name="ip_id" value="{{ ip_item.id }}">
@@ -429,6 +441,7 @@
                         <hr style="margin: 24px 0; border: none; border-top: 1px solid #e0e0e0;">
 
                         <form method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <input type="hidden" name="action" value="importBlacklist">
                             <div class="form-group">
                                 <label for="blacklist_file">Importer un fichier JSON</label>

@@ -79,6 +79,7 @@
         {% endif %}
 
         <form id="save-form" method="post" class="edit-grid">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <input type="hidden" name="action" value="save">
             
             <!-- Left Column: Configuration -->

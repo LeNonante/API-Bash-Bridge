@@ -55,7 +55,8 @@
             <h2>Création compte Administrateur</h2>
             <p class="description">Veuillez créer le compte administrateur de votre instance.</p>
             
-            <form method="post" action="/register">                
+            <form method="post" action="/register">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>                
                 <div class="form-group">
                     <label for="prefix">Facultatif : Préfixe des routes API (sans '/')</label>
                     <div class="input-wrapper">

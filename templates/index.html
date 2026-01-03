@@ -152,6 +152,7 @@
                         {% endif %}
                         <td>
                             <form method="post" action="{{ url_for('toggle_route') }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>    
                             <input type="hidden" name="route_id" value="{{ route.id }}">
                                 <label class="toggle-switch">
                                     <input type="checkbox" {% if route.active %}checked{% endif %} onchange="this.form.submit()">

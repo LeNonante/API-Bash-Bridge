@@ -19,8 +19,16 @@ import ipaddress
 from markdown import markdown
 import time
 import sys
+from flask_wtf.csrf import CSRFProtect
+from flask_talisman import Talisman
 
 app = Flask(__name__)
+csrf = CSRFProtect(app) # Active la protection sur toute l'app. Permet d'ajouter des tokens CSRF uniques dans les formulaires.
+
+# Configuration de Talisman
+# content_security_policy=None : On désactive la CSP stricte pour ne pas casser nos scripts inline actuels (ex: login.html, settings.html)
+# force_https=False : À mettre sur True uniquement si on a un certificat SSL/HTTPS actif.
+Talisman(app, content_security_policy=None, force_https=False)
 
 # Création d'un filtre qui injecte l'ID dans chaque log
 class RequestIdFilter(logging.Filter):
@@ -229,10 +237,14 @@ def settings():
             if not uploaded_file.filename.lower().endswith(".json"):
                 context["import_error"] = "Le fichier doit être au format JSON."
                 return render_template('settings.html', **context)
-
+ 
             save_path = os.path.join(app.root_path, "commandes.json")
-            uploaded_file.save(save_path)
-            context["import_success"] = "Fichier importé et sauvegardé."
+            success, message = verify_and_save_commands_file(uploaded_file, save_path)
+            
+            if not success:
+                context["import_error"] = message
+            else :
+                context["import_success"] = "Fichier importé et sauvegardé."
             return render_template('settings.html', **context)
         
         if action == "changeApiPrefix":
@@ -316,8 +328,14 @@ def settings():
                 return render_template('settings.html', **context)
 
             save_path = os.path.join(app.root_path, "whitelist.json")
-            uploaded_file.save(save_path)
-            context["import_whitelist_success"] = "Fichier importé et sauvegardé."
+            
+            success, message = verify_and_save_list_file(uploaded_file, save_path)
+            
+            if not success:
+                context["import_whitelist_error"] = message
+            else :
+                context["import_whitelist_success"] = "Fichier importé et sauvegardé."
+                
             context["whitelist"] = load_ip_list(os.path.join(app.root_path, "whitelist.json"))
             return render_template('settings.html', **context)
         
@@ -332,8 +350,14 @@ def settings():
                 return render_template('settings.html', **context)
 
             save_path = os.path.join(app.root_path, "blacklist.json")
-            uploaded_file.save(save_path)
-            context["import_blacklist_success"] = "Fichier importé et sauvegardé."
+            
+            success, message = verify_and_save_list_file(uploaded_file, save_path)
+            
+            if not success:
+                context["import_blacklist_error"] = message
+            else :
+                context["import_blacklist_success"] = "Fichier importé et sauvegardé."
+            
             context["blacklist"] = load_ip_list(os.path.join(app.root_path, "blacklist.json"))
             return render_template('settings.html', **context)
         
