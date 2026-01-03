@@ -20,9 +20,15 @@ from markdown import markdown
 import time
 import sys
 from flask_wtf.csrf import CSRFProtect
+from flask_talisman import Talisman
 
 app = Flask(__name__)
 csrf = CSRFProtect(app) # Active la protection sur toute l'app. Permet d'ajouter des tokens CSRF uniques dans les formulaires.
+
+# Configuration de Talisman
+# content_security_policy=None : On désactive la CSP stricte pour ne pas casser nos scripts inline actuels (ex: login.html, settings.html)
+# force_https=False : À mettre sur True uniquement si on a un certificat SSL/HTTPS actif.
+Talisman(app, content_security_policy=None, force_https=False)
 
 # Création d'un filtre qui injecte l'ID dans chaque log
 class RequestIdFilter(logging.Filter):
