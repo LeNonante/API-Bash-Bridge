@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API-Bash Bridge - Logs</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='settings.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='logs.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="/" class="logo-link" style="text-decoration: none;">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="5" width="17" height="14" rx="2" stroke="#22d3ee" stroke-width="2"/>
+                        <path d="M7 10L9 12L7 14" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 14H16" stroke="#22d3ee" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span>API-Bash Bridge</span>
+                </div>
+            </a>
+        </div>
+        
+        <div class="nav-center">
+            <a href="/" class="nav-link">Dashboard</a>
+            <a href="/logs" class="nav-link active">Logs</a> <a href="/settings" class="nav-link">Paramètres</a>
+            <a href="/logout" class="nav-link">Déconnexion</a>
+            <a href="/docs" class="nav-link">Documentation</a>
+        </div>
+
+        <button class="mobile-menu-toggle" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </nav>
+
+    <div class="mobile-menu">
+        <a href="/" class="mobile-nav-link">Dashboard</a>
+        <a href="/logs" class="mobile-nav-link active">Logs</a>
+        <a href="/settings" class="mobile-nav-link">Paramètres</a>
+        <a href="/logout" class="mobile-nav-link">Déconnexion</a>
+        <a href="/docs" class="mobile-nav-link">Documentation</a>
+    </div>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div>
+                <h1>Journaux d'activité</h1>
+                <p class="page-description">Consultation en temps réel des accès et erreurs de l'API.</p>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <a href="/logs" class="btn-primary" style="text-decoration: none; display: inline-flex; align-items: center;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                            <path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                        </svg>
+                        Actualiser
+                    </a>
+                    <a class="btn-secondary" href="/settings/export-logs">Exporter logs</a>
+                </div>
+                <p class="description" style="margin: 0;">Exportez les fichiers de logs. Ils seront téléchargés dans une archive ZIP si plusieurs fichiers existent.</p>
+            </div>
+        </div>
+
+        <div class="search-bar">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+                <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <input id="logSearch" type="text" placeholder="Filtrer les logs (ex: [ECHEC], ID de requête, IP, date, heure, route, méthode...)">
+        </div>
+
+        <div class="logs-container">
+            {% for line in logs %}
+                {% set formatted_line = line | e 
+                    | replace('[ECHEC]', '<span class="tag-echec">[ECHEAC]</span>') 
+                    | replace('[SUCCES]', '<span class="tag-succes">[SUCCES]</span>') 
+                    | safe 
+                %}
+
+                {% if 'ERROR' in line %}
+                    <div class="log-entry log-error">{{ line | safe }}</div>
+                {% elif 'WARNING' in line %}
+                    <div class="log-entry log-warning">{{ line | safe }}</div>
+                {% elif 'INFO' in line %}
+                    <div class="log-entry log-info">{{ line | safe }}</div>
+                {% else %}
+                    <div class="log-entry">{{ line | safe }}</div>
+                {% endif %}
+            {% else %}
+                <div style="text-align: center; color: #94a3b8; padding: 20px;">Aucun log disponible.</div>
+            {% endfor %}
+        </div>
+        
+        <footer style="font-size: 0.8em; color: #999; text-align: center; margin-top: 20px;">
+            Version {{ config.APP_VERSION }}
+        </footer>
+    </main>
+
+    <script>
+        document.getElementById('logSearch').addEventListener('keyup', function() {
+            // 1. On récupère le texte tapé et on le met en minuscule
+            var filter = this.value.toLowerCase();
+            
+            // 2. On récupère toutes les lignes de logs
+            var logs = document.querySelectorAll('.log-entry');
+            
+            // 3. On boucle sur chaque ligne
+            logs.forEach(function(log) {
+                // Si le texte de la ligne contient la recherche, on affiche, sinon on cache
+                if (log.textContent.toLowerCase().includes(filter)) {
+                    log.style.display = "";
+                } else {
+                    log.style.display = "none";
+                }
+            });
+        });
+
+        // Toggle mobile menu
+        const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+        const mobileMenu = document.querySelector('.mobile-menu');
+        
+        mobileMenuToggle.addEventListener('click', function() {
+            this.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+        });
+
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.navbar') && !event.target.closest('.mobile-menu')) {
+                mobileMenuToggle.classList.remove('active');
+                mobileMenu.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

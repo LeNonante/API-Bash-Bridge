@@ -163,6 +163,17 @@ Si l'option **"Retourner la sortie"** est activée pour la route, un champ `outp
   "output": "Contenu du fichier texte..."
 }
 ```
+## 📰 Logs et Audit
+
+L'application enregistre toutes les tentatives d'accès. Une page de l'interface permet de surveiller l'activité de l'API en direct.
+
+![Image page de logs](/static/docs/logs.png)
+
+- **Les logs contiennent :** Date, IP source, Route appelée, Statut (Succès/Échec/Non autorisé) et un ID de requête unique pour le traçage.
+- **Coloration syntaxique :** Les lignes sont colorées selon leur importance (Info, Warnin, Error). De plus, l'état du resultat de la requete est coloré (Echec/Succes).
+- **Exporter logs :** Télécharge le fichier api-activity.log. (Une archive ZIP peut remplacer le fichier de logs si plusieurs fichiers de logs existent).
+
+Les logs contiennet uniquement les tentatives d'accès à l'API, et non à l'interface.
 
 ## ⚙️ Paramètres et Sécurité
 
@@ -189,16 +200,7 @@ Accessible via le menu Paramètres.
 
 > **Attention :** Seules les routes (avec commandes, token hashé, et état) sont exportées. Les listes (blacklist et whitelist) ne sont pas exportées ici (voir plus bas).
 
-### 4. Logs et Audit
-
-L'application enregistre toutes les tentatives d'accès.
-
-- **Exporter logs :** Télécharge le fichier api-activity.log. (Une archive ZIP peut remplacer le fichier de logs si plusieurs fichiers de logs existent).
-- **Les logs contiennent :** Date, IP source, Route appelée, Statut (Succès/Échec/Non autorisé) et un ID de requête unique pour le traçage.
-
-Les logs contiennet uniquement les tentatives d'accès à l'API, et non à l'interface.
-
-### 5. Filtrage IP (Whitelist / Blacklist)
+### 4. Filtrage IP (Whitelist / Blacklist)
 
 Vous pouvez restreindre l'accès à l'API (et non à l'interface admin) selon l'adresse IP de l'appelant.
 
@@ -222,7 +224,7 @@ Vous pouvez restreindre l'accès à l'API (et non à l'interface admin) selon l'
 
 Tout comme les commandes, il est possible d'exporter et importer un fichier de configuration de la blacklist et la whitelist.
 
-### 6. Protection Anti-Bruteforce (Rate Limiting)
+### 5. Protection Anti-Bruteforce (Rate Limiting)
 
 Pour protéger l'application contre les attaques par force brute et la surcharge, des limites de requêtes sont appliquées :
 

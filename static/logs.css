@@ -1,0 +1,31 @@
+.logs-container {
+    background-color: #0f172a;
+    color: #e2e8f0;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid rgba(71, 85, 105, 0.6);
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    height: 70vh;
+    overflow-y: auto;
+    line-height: 1.5;
+}
+.log-entry {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 2px 0;
+}
+.log-entry:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+/* Coloration syntaxique simple */
+.log-info { color: #3b82f6; }
+.log-warning { color: #f59e0b; }
+.log-error { color: #ef4444; }
+.tag-echec {
+    color: #ef4444; /* Rouge */
+    font-weight: bold;
+}
+.tag-succes {
+    color: #22c55e; /* Vert */
+    font-weight: bold;
+}

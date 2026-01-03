@@ -19,7 +19,7 @@ C'est l'outil idéal pour piloter un serveur, lancer des scripts de maintenance,
     * Interface d'administration protégée par un mot de passe (défini à la première connexion).
     * **Protection Anti-Bruteforce :** Limitation automatique du nombre de tentatives de connexion et d'appels API (Rate Limiting).
     * **Support de l'Authentification à Deux Facteurs (A2F/OTP) :** Compatible avec Google Authenticator, Authy, etc.
-* **Traçabilité :** Des fichiers de logs permettent de tracer chaque requêtes faites à l'API (avec un identifiant par requête ainsi que l'adresse IP de la source).
+* **Traçabilité :** Interface web intégrée pour voir les activités de l'API en temps réel, avec coloration syntaxique (Succès/Échec), filtrage dynamique et possibilité d'exportation du fichier de logs.
 * **Multi-OS :** Fonctionne sur **Linux** (idéal serveur) et **Windows** (dev/local).
 * **Prefix API Configurable :** Changez le préfixe de base (ex: `/api/v1`) depuis l'interface.
 * **Mises à jour :** Mettez l'application à jour automatiquement grâce au bouton qui apparait lorsqu'une nouvelle version est disponible. 
@@ -96,16 +96,12 @@ sudo systemctl status api-bash-bridge
 Pour faciliter le débogage et l'audit de sécurité, l'application génère un fichier de journalisation local situé à la racine de l'installation (`/opt/api-bash-bridge/api-activity.log`).
 
 ### Fonctionnalités des logs
+* **Consultation en ligne :** Pour surveiller l'activité en direct, la consultation des logs est disponible depuis l'interface. Une coloration sytaxique permet d'identifier rapidement les résultats des requêtes, et un barre de recherche permet de filtrer les logs affichés (par IP, ID de requête, résultat, route, etc.)
 * **Rotation automatique :** Pour préserver l'espace disque, le fichier est limité à **1 Mo**. Une fois cette taille atteinte, il est archivé en `api-activity.log.1` et un nouveau fichier est créé (1 seule archive conservée).
 * **Request ID (Traçabilité) :** Chaque requête HTTP vers l'API se voit attribuer un identifiant unique (ex: `[a1b2c3d4]`). Cela permet de suivre le cheminement exact d'un appel spécifique dans les logs, même si plusieurs requêtes arrivent simultanément.
 * **Contenu :** Chaque ligne contient l'horodatage, l'ID de requête, le niveau de log, et le message (incluant l'IP source et le statut de succès/échec).
-* **Exportation :** Les fichiers de logs sont téléchargeables depuis la page paramètres de l'interface. 
-### Consulter les logs en temps réel
-Pour surveiller l'activité de l'API en direct :
+* **Exportation :** Les fichiers de logs sont téléchargeables depuis la page logs de l'interface. 
 
-```bash
-tail -f /opt/api-bash-bridge/api-activity.log
-```
 ---
 
 ## 🛡️ Avertissement de Sécurité

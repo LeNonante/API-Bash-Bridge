@@ -780,6 +780,38 @@ def apply_update():
     perform_update()
     return jsonify({"status": "updating"}), 200
 
+@app.route('/logs')
+@login_required
+def view_logs():
+    log_path = os.path.join(os.path.dirname(__file__), "api-activity.log")
+    logs = []
+    try:
+        if os.path.exists(log_path):
+            with open(log_path, "r", encoding="utf-8", errors="replace") as f:
+                lines = f.read().splitlines()
+                
+            # On traite les lignes dans l'ordre chronologique (ancien -> récent)
+            processed_logs = []
+            for line in lines:
+                if not line.strip(): continue # On saute les lignes vides
+                
+                # 1. On sécurise les caractères spéciaux (<, >) pour éviter les bugs d'affichage
+                safe_line = line.replace("<", "&lt;").replace(">", "&gt;")
+                
+                # 2. On ajoute nos couleurs (HTML)
+                safe_line = safe_line.replace("[ECHEC]", '<span class="tag-echec">[ECHEC]</span>')
+                safe_line = safe_line.replace("[SUCCES]", '<span class="tag-succes">[SUCCES]</span>')
+                
+                # On ajoute à la liste
+                processed_logs.append(safe_line)
+            
+            # 3. On inverse la liste À LA FIN pour avoir les derniers logs en premier
+            processed_logs.reverse()
+            logs = processed_logs
+    except Exception as e:
+        logs = [f"Erreur lors de la lecture des logs : {str(e)}"]
+        
+    return render_template('logs.html', logs=logs)
 
 @app.errorhandler(429)
 def ratelimit_handler(e):
