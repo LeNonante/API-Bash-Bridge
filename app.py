@@ -238,20 +238,9 @@ def settings():
     context = {}
     context["api_prefix"] = getApiPrefix()[:-1]
     context["current_mode"] = getMode()
-    # Verrouillage pour lire la whitelist
-    lock_whitelist = os.path.join(app.root_path, "whitelist.json.lock")
-    try:
-        with FileLock(lock_whitelist, timeout=5):
-            context["whitelist"] = load_ip_list(os.path.join(app.root_path, "whitelist.json"))
-    except Exception:
-        context["whitelist"] = []
-    # Verrouillage pour lire la blacklist
-    lock_blacklist = os.path.join(app.root_path, "blacklist.json.lock")
-    try:
-        with FileLock(lock_blacklist, timeout=5):
-            context["blacklist"] = load_ip_list(os.path.join(app.root_path, "blacklist.json"))
-    except Exception:
-        context["blacklist"] = []
+    
+    context["whitelist"] = get_whitelist()
+    context["blacklist"] = get_blacklist()
     context["a2f_enabled"] = is2FAEnabled()
     
     if request.method == "POST":
@@ -330,13 +319,10 @@ def settings():
                 try:
                     # Valider l'IP
                     ipaddress.ip_address(ip_address)
-                    filename = os.path.join(app.root_path, f"{list_type}.json")
-                    success, message = add_ip_to_list(filename, ip_address, ip_description)
-                    if success:
-                        context[f"{list_type}_success"] = message
-                        context[list_type] = load_ip_list(filename)
-                    else:
-                        context[f"{list_type}_error"] = message
+                    add_access_rule(ip_address, ip_description, list_type)
+                    context[f"{list_type}_success"] = "IP ajoutée avec succès"
+                    context[list_type] = get_whitelist() if list_type == "whitelist" else get_blacklist()
+                    
                 except ValueError:
                     context[f"{list_type}_error"] = "L'adresse IP n'est pas valide."
         
@@ -345,13 +331,10 @@ def settings():
             ip_id = request.form.get("ip_id")
             try:
                 ip_id = int(ip_id)
-                filename = os.path.join(app.root_path, f"{list_type}.json")
-                success, message = remove_ip_from_list(filename, ip_id)
-                if success:
-                    context[f"{list_type}_success"] = message
-                    context[list_type] = load_ip_list(filename)
-                else:
-                    context[f"{list_type}_error"] = message
+                remove_access_rule(ip_id)
+                
+                context[f"{list_type}_success"] = "IP supprimée avec succès"
+                context[list_type] = get_whitelist() if list_type == "whitelist" else get_blacklist()
             except (ValueError, TypeError):
                 context[f"{list_type}_error"] = "ID invalide."
         
@@ -360,10 +343,9 @@ def settings():
             ip_id = request.form.get("ip_id")
             try:
                 ip_id = int(ip_id)
-                filename = os.path.join(app.root_path, f"{list_type}.json")
-                success, active = toggle_ip_in_list(filename, ip_id)
-                if success:
-                    context[list_type] = load_ip_list(filename)
+                toggle_access_rule(ip_id)
+                context[f"{list_type}_success"] = "État de l'IP modifié avec succès"
+                context[list_type] = get_whitelist() if list_type == "whitelist" else get_blacklist()
             except (ValueError, TypeError):
                 context[f"{list_type}_error"] = "ID invalide."
                 

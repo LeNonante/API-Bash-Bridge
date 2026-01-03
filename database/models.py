@@ -28,3 +28,4 @@ class AccessRule(db.Model):
     ip_address = db.Column(db.String(50), nullable=False)
     description = db.Column(db.String(200))
     rule_type = db.Column(db.String(10)) # 'whitelist' ou 'blacklist'
+    is_active = db.Column(db.Boolean, default=True)

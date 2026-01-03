@@ -9,6 +9,8 @@ qrcode_2fa.png
 commandes.json
 whitelist.json
 blacklist.json
+lists.json
+init
 # C extensions
 *.so
 

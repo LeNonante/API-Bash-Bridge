@@ -430,3 +430,54 @@ def delete_command(command_id):
         db.session.commit()
         return True
     return False
+
+def get_whitelist():
+    rules = AccessRule.query.filter_by(rule_type="whitelist").all()
+    result = []
+    for r in rules:
+        result.append({
+            "id": r.id,
+            "ip": r.ip_address,
+            "description": r.description,
+            "active": r.is_active
+        })
+    return result
+
+def get_blacklist():
+    rules = AccessRule.query.filter_by(rule_type="blacklist").all()
+    result = []
+    for r in rules:
+        result.append({
+            "id": r.id,
+            "ip": r.ip_address,
+            "description": r.description,
+            "active": r.is_active
+        })
+    return result
+
+def add_access_rule(ip_address, description, rule_type):
+    rule = AccessRule(
+        ip_address=ip_address,
+        description=description,
+        rule_type=rule_type,
+        is_active=True
+    )
+    db.session.add(rule)
+    db.session.commit()
+    return rule.id
+
+def remove_access_rule(rule_id):
+    rule = AccessRule.query.filter_by(id=rule_id).first()
+    if rule:
+        db.session.delete(rule)
+        db.session.commit()
+        return True
+    return False
+
+def toggle_access_rule(rule_id):
+    rule = AccessRule.query.filter_by(id=rule_id).first()
+    if rule:
+        rule.is_active = not rule.is_active
+        db.session.commit()
+        return True
+    return False
