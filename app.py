@@ -1,4 +1,4 @@
-from flask import Flask, flash, jsonify, request, redirect, url_for, render_template, send_file, g
+from flask import Flask, flash, jsonify, request, redirect, session, url_for, render_template, send_file, g
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from dotenv import load_dotenv
 from services.config import *
@@ -101,8 +101,8 @@ def check_initialisation():
     # Génère un ID unique court (8 caractères)
     g.request_id = str(uuid.uuid4())[:8]
     
-    # Empêcher boucle infinie : on laisse accéder à /register
-    if request.endpoint=="static":
+    # Empêcher boucle infinie : on laisse accéder à /register, /login et /logout
+    if request.endpoint in ["static", "login", "logout"]:
         return
     if request.endpoint=="register" and not (isThereAdmin()):
         return
@@ -212,7 +212,12 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('login'))
+    session.clear()  # Nettoie complètement la session
+    response = redirect(url_for('login'))
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 
 @app.route('/settings', methods=["GET", "POST"])
