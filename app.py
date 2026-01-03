@@ -29,7 +29,7 @@ csrf = CSRFProtect(app) # Active la protection sur toute l'app. Permet d'ajouter
 # Configuration de Talisman
 # content_security_policy=None : On désactive la CSP stricte pour ne pas casser nos scripts inline actuels (ex: login.html, settings.html)
 # force_https=False : À mettre sur True uniquement si on a un certificat SSL/HTTPS actif.
-Talisman(app, content_security_policy=None, force_https=False)
+#Talisman(app, content_security_policy=None, force_https=False)
 
 # Création d'un filtre qui injecte l'ID dans chaque log
 class RequestIdFilter(logging.Filter):
@@ -242,7 +242,7 @@ def settings():
         context["blacklist"] = []
     context["a2f_enabled"] = is2FAEnabled()
     
-    if request.method == "POST>":
+    if request.method == "POST":
         # Ici, on ne met PAS de verrou, car les fonctions appelées le font déjà.
         action = request.form.get("action")
         
