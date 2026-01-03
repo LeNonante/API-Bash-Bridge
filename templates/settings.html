@@ -213,7 +213,28 @@
             <div class="login-card settings-card">
                 <h2>Mode de sécurité</h2>
                 <p class="description">Sélectionnez le mode de sécurité pour les accès API.</p>
+                
                 <a href="{{ url_for('export_lists') }}" class="btn-secondary" style="margin-top: 12px; display: inline-block;">Exporter les listes</a>
+                
+                    {% if import_lists_error %}
+                        <p class="error-message" style="margin-bottom: 16px;">{{ import_lists_error }}</p>
+                    {% endif %}
+                    {% if import_lists_success %}
+                        <p class="success-message" style="margin-bottom: 16px;">{{ import_lists_success }}</p>
+                    {% endif %}
+
+                <form method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <input type="hidden" name="action" value="importLists">
+                    <div class="form-group">
+                        <label for="list_file">Importer un fichier JSON</label>
+                        <div class="input-wrapper file-input-wrapper">
+                            <input type="file" id="list_file" name="list_file" accept=".json" required>
+                        </div>
+                    </div>
+                    <button class="btn-primary" type="submit">Importer le fichier</button>
+                </form>
+
                 <form method="post">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <input type="hidden" name="action" value="changeMode">
@@ -247,13 +268,6 @@
             {% if current_mode == 'WHITELIST' %}
                     <h2 style="margin-top: 24px;">Gestion de la Whitelist</h2>
                     <p class="description">Gérez les IPs autorisées à accéder à l'API en mode Whitelist.</p>
-
-                    {% if import_whitelist_error %}
-                        <p class="error-message" style="margin-bottom: 16px;">{{ import_whitelist_error }}</p>
-                    {% endif %}
-                    {% if import_whitelist_success %}
-                        <p class="success-message" style="margin-bottom: 16px;">{{ import_whitelist_success }}</p>
-                    {% endif %}
 
                     <form method="post" style="margin-bottom: 24px;">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
@@ -328,32 +342,12 @@
                         <p style="color: #999; font-style: italic;">Aucune IP dans la whitelist</p>
                         {% endif %}
 
-                        <hr style="margin: 24px 0; border: none; border-top: 1px solid #e0e0e0;">
-
-                        <form method="post" enctype="multipart/form-data">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                            <input type="hidden" name="action" value="importWhitelist">
-                            <div class="form-group">
-                                <label for="whitelist_file">Importer un fichier JSON</label>
-                                <div class="input-wrapper file-input-wrapper">
-                                    <input type="file" id="whitelist_file" name="whitelist_file" accept=".json" required>
-                                </div>
-                            </div>
-                            <button class="btn-primary" type="submit">Importer le fichier</button>
-                        </form>
                     </div>
             {% endif %}
 
             {% if current_mode == 'BLACKLIST' %}
                     <h2 style="margin-top: 24px;">Gestion de la Blacklist</h2>
                     <p class="description">Gérez les IPs interdites d'accès à l'API en mode Blacklist.</p>
-
-                    {% if import_blacklist_error %}
-                        <p class="error-message" style="margin-bottom: 16px;">{{ import_blacklist_error }}</p>
-                    {% endif %}
-                    {% if import_blacklist_success %}
-                        <p class="success-message" style="margin-bottom: 16px;">{{ import_blacklist_success }}</p>
-                    {% endif %}
 
                     <form method="post" style="margin-bottom: 24px;">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
@@ -428,19 +422,6 @@
                         <p style="color: #999; font-style: italic;">Aucune IP dans la blacklist</p>
                         {% endif %}
 
-                        <hr style="margin: 24px 0; border: none; border-top: 1px solid #e0e0e0;">
-
-                        <form method="post" enctype="multipart/form-data">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                            <input type="hidden" name="action" value="importBlacklist">
-                            <div class="form-group">
-                                <label for="blacklist_file">Importer un fichier JSON</label>
-                                <div class="input-wrapper file-input-wrapper">
-                                    <input type="file" id="blacklist_file" name="blacklist_file" accept=".json" required>
-                                </div>
-                            </div>
-                            <button class="btn-primary" type="submit">Importer le fichier</button>
-                        </form>
                     </div>
                 </div>
             {% endif %}

@@ -350,48 +350,25 @@ def settings():
             except (ValueError, TypeError):
                 context[f"{list_type}_error"] = "ID invalide."
                 
-        if action == "importWhitelist":
-            uploaded_file = request.files.get("whitelist_file")
+        if action == "importLists":
+            uploaded_file = request.files.get("list_file")
             if uploaded_file is None or uploaded_file.filename == "":
-                context["import_whitelist_error"] = "Aucun fichier sélectionné."
+                context["import_lists_error"] = "Aucun fichier sélectionné."
                 return render_template('settings.html', **context)
 
             if not uploaded_file.filename.lower().endswith(".json"):
-                context["import_whitelist_error"] = "Le fichier doit être au format JSON."
+                context["import_lists_error"] = "Le fichier doit être au format JSON."
                 return render_template('settings.html', **context)
-
-            save_path = os.path.join(app.root_path, "whitelist.json")
             
-            success, message = verify_and_save_list_file(uploaded_file, save_path)
+            success, message = import_access_rules_from_json(uploaded_file, True)
             
             if not success:
-                context["import_whitelist_error"] = message
+                context["import_lists_error"] = message
             else :
-                context["import_whitelist_success"] = "Fichier importé et sauvegardé."
+                context["import_lists_success"] = "Fichier importé et sauvegardé."
                 
-            context["whitelist"] = load_ip_list(os.path.join(app.root_path, "whitelist.json"))
-            return render_template('settings.html', **context)
-        
-        if action == "importBlacklist":
-            uploaded_file = request.files.get("blacklist_file")
-            if uploaded_file is None or uploaded_file.filename == "":
-                context["import_blacklist_error"] = "Aucun fichier sélectionné."
-                return render_template('settings.html', **context)
-
-            if not uploaded_file.filename.lower().endswith(".json"):
-                context["import_blacklist_error"] = "Le fichier doit être au format JSON."
-                return render_template('settings.html', **context)
-
-            save_path = os.path.join(app.root_path, "blacklist.json")
-            
-            success, message = verify_and_save_list_file(uploaded_file, save_path)
-            
-            if not success:
-                context["import_blacklist_error"] = message
-            else :
-                context["import_blacklist_success"] = "Fichier importé et sauvegardé."
-            
-            context["blacklist"] = load_ip_list(os.path.join(app.root_path, "blacklist.json"))
+            context["whitelist"] = get_whitelist()
+            context["blacklist"] = get_blacklist()
             return render_template('settings.html', **context)
         
         if action == "manage2FA":
