@@ -322,8 +322,14 @@ def settings():
                 return render_template('settings.html', **context)
 
             save_path = os.path.join(app.root_path, "whitelist.json")
-            uploaded_file.save(save_path)
-            context["import_whitelist_success"] = "Fichier importé et sauvegardé."
+            
+            success, message = verify_and_save_list_file(uploaded_file, save_path)
+            
+            if not success:
+                context["import_whitelist_error"] = message
+            else :
+                context["import_whitelist_success"] = "Fichier importé et sauvegardé."
+                
             context["whitelist"] = load_ip_list(os.path.join(app.root_path, "whitelist.json"))
             return render_template('settings.html', **context)
         
@@ -338,8 +344,14 @@ def settings():
                 return render_template('settings.html', **context)
 
             save_path = os.path.join(app.root_path, "blacklist.json")
-            uploaded_file.save(save_path)
-            context["import_blacklist_success"] = "Fichier importé et sauvegardé."
+            
+            success, message = verify_and_save_list_file(uploaded_file, save_path)
+            
+            if not success:
+                context["import_blacklist_error"] = message
+            else :
+                context["import_blacklist_success"] = "Fichier importé et sauvegardé."
+            
             context["blacklist"] = load_ip_list(os.path.join(app.root_path, "blacklist.json"))
             return render_template('settings.html', **context)
         
