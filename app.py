@@ -279,12 +279,12 @@ def settings():
                 return render_template('settings.html', **context)
  
             save_path = os.path.join(app.root_path, "commandes.json")
-            success, message = verify_and_save_commands_file(uploaded_file, save_path)
+            success, message = import_commands_from_json(uploaded_file, True)
             
             if not success:
                 context["import_error"] = message
             else :
-                context["import_success"] = "Fichier importé et sauvegardé."
+                context["import_success"] = message
             return render_template('settings.html', **context)
         
         if action == "changeApiPrefix":

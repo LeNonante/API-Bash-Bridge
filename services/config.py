@@ -258,82 +258,6 @@ def activate_2fa(env_file, activate=True):
     
 def is2FAEnabled():
     return os.getenv("ENABLE_2FA", "FALSE") == "TRUE"
-
-def verify_and_save_commands_file(file_storage, save_path):
-    """
-    Vérifie et sauvegarde le fichier de commandes.
-    Retourne (Succès: bool, Message: str)
-    """
-    lock_path = save_path + ".lock" # <--- AJOUT
-    try:
-        # On charge le JSON en mémoire pour vérifier sa validité
-        data = json.load(file_storage)
-        
-        # Vérification 1: Est-ce une liste ?
-        if not isinstance(data, list):
-            return False, "Le fichier doit contenir une liste d'objets JSON (tableau [])."
-        
-        # Vérification 2: Les clés obligatoires sont-elles présentes ?
-        required_keys = {"id", "method", "path", "command", "active", "hashed_token", "tags", "return_output"}
-        for index, item in enumerate(data):
-            if not isinstance(item, dict):
-                return False, f"L'élément à l'index {index} n'est pas un objet JSON valide."
-            
-            # On vérifie si toutes les clés requises sont présentes dans les clés de l'item
-            if not required_keys.issubset(item.keys()):
-                missing = required_keys - item.keys()
-                return False, f"Format invalide à l'index {index}. Clés manquantes: {missing}"
-
-        # Si tout est bon, on sauvegarde proprement le fichier en le vérouillant pendant l'écriture
-        # (Cela permet aussi de reformater le JSON correctement avec l'indentation)
-        with FileLock(lock_path, timeout=10):
-            with open(save_path, 'w', encoding='utf-8') as f:
-                json.dump(data, f, indent=4, ensure_ascii=False)
-            
-        return True, "Configuration importée et validée avec succès."
-        
-    except json.JSONDecodeError:
-        return False, "Le fichier fourni n'est pas un JSON valide."
-    except Exception as e:
-        return False, f"Erreur lors de l'import : {str(e)}"
-    
-def verify_and_save_list_file(file_storage, save_path):
-    """
-    Vérifie et sauvegarde un fichier de liste (black/whitelist).
-    Retourne (Succès: bool, Message: str)
-    """
-    lock_path = save_path + ".lock"
-    try:
-        # On charge le JSON en mémoire pour vérifier sa validité
-        data = json.load(file_storage)
-        
-        # Vérification 1: Est-ce une liste ?
-        if not isinstance(data, list):
-            return False, "Le fichier doit contenir une liste d'objets JSON (tableau [])."
-        
-        # Vérification 2: Les clés obligatoires sont-elles présentes ?
-        required_keys = {"id", "description", "ip", "active"}
-        for index, item in enumerate(data):
-            if not isinstance(item, dict):
-                return False, f"L'élément à l'index {index} n'est pas un objet JSON valide."
-            
-            # On vérifie si toutes les clés requises sont présentes dans les clés de l'item
-            if not required_keys.issubset(item.keys()):
-                missing = required_keys - item.keys()
-                return False, f"Format invalide à l'index {index}. Clés manquantes: {missing}"
-
-        # Si tout est bon, on sauvegarde proprement le fichier en le vérouillant pendant l'écriture
-        # (Cela permet aussi de reformater le JSON correctement avec l'indentation)
-        with FileLock(lock_path, timeout=10):
-            with open(save_path, 'w', encoding='utf-8') as f:
-                json.dump(data, f, indent=4, ensure_ascii=False)
-            
-        return True, "Configuration importée et validée avec succès."
-        
-    except json.JSONDecodeError:
-        return False, "Le fichier fourni n'est pas un JSON valide."
-    except Exception as e:
-        return False, f"Erreur lors de l'import : {str(e)}"
     
     
 #SQL ALCHEMY FUNCTIONS---------------------------
@@ -511,3 +435,55 @@ def export_access_rules_to_json():
             "type": r.rule_type
         })
     return json.dumps(result, indent=4, ensure_ascii=False)
+
+def import_commands_from_json(file_storage, replace_existing=True):
+    """
+    Vérifie et sauvegarde le fichier de commandes dans la base de données.
+    Retourne (Succès: bool, Message: str)
+    """
+    try:
+        # On charge le JSON en mémoire pour vérifier sa validité
+        data = json.load(file_storage)
+        
+        # Vérification 1: Est-ce une liste ?
+        if not isinstance(data, list):
+            return False, "Le fichier doit contenir une liste d'objets JSON (tableau [])."
+        
+        # Vérification 2: Les clés obligatoires sont-elles présentes ?
+        required_keys = {"id", "method", "path", "command", "active", "hashed_token", "tags", "return_output"}
+        for index, item in enumerate(data):
+            if not isinstance(item, dict):
+                return False, f"L'élément à l'index {index} n'est pas un objet JSON valide."
+            
+            # On vérifie si toutes les clés requises sont présentes dans les clés de l'item
+            if not required_keys.issubset(item.keys()):
+                missing = required_keys - item.keys()
+                return False, f"Format invalide à l'index {index}. Clés manquantes: {missing}"
+            
+        # Si tout est bon, on import le fichier dans la base de données
+        if replace_existing:
+            db.session.query(Route).delete()
+        count = 0
+        for info in data:
+            route = Route(
+                path=info.get('path', ''),
+                command=info.get('command', ''),
+                description=info.get('description', ''),
+                is_active=info.get('active', True),
+                hashed_token=info.get('hashed_token', ''),
+                return_output=info.get('return_output', False),
+                tags=','.join(info.get('tags', [])),
+                method=info.get('method', 'GET'),
+            )
+            db.session.add(route)
+            count += 1
+
+        db.session.commit()
+        
+        return True, f"Configuration importée et validée avec succès. {count} routes ajoutées."
+        
+    except json.JSONDecodeError:
+        return False, "Le fichier fourni n'est pas un JSON valide."
+    except Exception as e:
+        return False, f"Erreur lors de l'import : {str(e)}"
+    
