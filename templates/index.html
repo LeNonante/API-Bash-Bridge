@@ -132,6 +132,7 @@
                         <th>MÉTHODE</th>
                         <th>CHEMIN</th>
                         <th>DESCRIPTION</th>
+                        <th>TAGS</th>
                         <th>COMMANDE BASH</th>
                         <th>ÉTAT</th>
                         <th>ACTIONS</th>
@@ -145,6 +146,17 @@
                         </td>
                         <td><code class="path-code">{{ route.path }}</code></td>
                         <td class="description">{{ route.description }}</td>
+                        <td>
+                            {% if route.tags %}
+                                <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                                    {% for tag in route.tags %}
+                                        <span class="tag-badge">{{ tag }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <span style="color: #64748b; font-size: 12px;">-</span>
+                            {% endif %}
+                        </td>
                         {% if route.command|length < 66 %}
                             <td><code class="bash-code">{{ route.command }}</code></td>
                         {% else %}

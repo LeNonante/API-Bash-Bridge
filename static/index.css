@@ -510,6 +510,18 @@ body {
     color: #ef4444;
 }
 
+.tag-badge {
+    background: rgba(34, 211, 238, 0.15); /* Bleu cyan transparent */
+    color: #22d3ee;
+    border: 1px solid rgba(34, 211, 238, 0.3);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    display: inline-block;
+}
+
 /* Pagination */
 .pagination {
     display: flex;

@@ -273,7 +273,7 @@ def verify_and_save_commands_file(file_storage, save_path):
             return False, "Le fichier doit contenir une liste d'objets JSON (tableau [])."
         
         # Vérification 2: Les clés obligatoires sont-elles présentes ?
-        required_keys = {"id", "method", "path", "command", "active", "hashed_token"}
+        required_keys = {"id", "method", "path", "command", "active", "hashed_token", "tags"}
         for index, item in enumerate(data):
             if not isinstance(item, dict):
                 return False, f"L'élément à l'index {index} n'est pas un objet JSON valide."
