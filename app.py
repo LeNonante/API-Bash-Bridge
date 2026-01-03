@@ -231,10 +231,14 @@ def settings():
             if not uploaded_file.filename.lower().endswith(".json"):
                 context["import_error"] = "Le fichier doit être au format JSON."
                 return render_template('settings.html', **context)
-
+ 
             save_path = os.path.join(app.root_path, "commandes.json")
-            uploaded_file.save(save_path)
-            context["import_success"] = "Fichier importé et sauvegardé."
+            success, message = verify_and_save_commands_file(uploaded_file, save_path)
+            
+            if not success:
+                context["import_error"] = message
+            else :
+                context["import_success"] = "Fichier importé et sauvegardé."
             return render_template('settings.html', **context)
         
         if action == "changeApiPrefix":
