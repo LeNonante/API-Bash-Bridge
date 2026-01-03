@@ -27,6 +27,7 @@ from flask_limiter.util import get_remote_address
 from flask_sqlalchemy import SQLAlchemy
 from database.extensions import db
 from database.models import Route, AccessRule
+import io
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 app = Flask(__name__)
@@ -440,75 +441,36 @@ def settings():
 @app.route('/settings/export', methods=["GET"])
 @login_required
 def export_commands():
-    commands_path = os.path.join(app.root_path, "commandes.json")
-    lock_path = commands_path + ".lock"
+    json_str=export_commands_to_json()
 
-    if not os.path.exists(commands_path):
-        return "Aucun fichier commandes.json à exporter", 404
+    # On doit encoder la string en bytes (utf-8)
+    mem_file = io.BytesIO()
+    mem_file.write(json_str.encode('utf-8'))
+    mem_file.seek(0)  # IMPORTANT : On remet le curseur au début du fichier
 
-    # On lit tout le contenu binaire en mémoire PENDANT que le fichier est verrouillé
-    try:
-        with FileLock(lock_path, timeout=5):
-            with open(commands_path, "rb") as f:
-                file_content = f.read()
-    except Exception as e:
-        app.logger.error(f"Erreur export commandes: {e}")
-        return "Erreur lors de la lecture du fichier", 500
-
-    # On renvoie le contenu depuis la mémoire (le verrou est déjà relâché ici)
+    # 4. Envoi au navigateur pour téléchargement
     return send_file(
-        BytesIO(file_content),
-        mimetype='application/json',
-        as_attachment=True,
-        download_name="commandes.json"
+        mem_file,
+        as_attachment=True,          # Force le téléchargement
+        download_name='export_commandes.json', # Nom du fichier reçu par l'utilisateur
+        mimetype='application/json'  # Type MIME correct
     )
 
-@app.route('/settings/export-whitelist', methods=["GET"])
+@app.route('/settings/export-lists', methods=["GET"])
 @login_required
-def export_whitelist():
-    whitelist_path = os.path.join(app.root_path, "whitelist.json")
-    lock_path = whitelist_path + ".lock"
+def export_lists():
+    json_str=export_access_rules_to_json()
 
-    if not os.path.exists(whitelist_path):
-        return "Aucun fichier whitelist.json à exporter", 404
+    mem_file = io.BytesIO()
+    mem_file.write(json_str.encode('utf-8'))
+    mem_file.seek(0)  # IMPORTANT : On remet le curseur au début du fichier
 
-    try:
-        with FileLock(lock_path, timeout=5):
-            with open(whitelist_path, "rb") as f:
-                file_content = f.read()
-    except Exception as e:
-        app.logger.error(f"Erreur export whitelist: {e}")
-        return "Erreur lors de la lecture du fichier", 500
-
+    # 4. Envoi au navigateur pour téléchargement
     return send_file(
-        BytesIO(file_content),
+        mem_file,
         mimetype='application/json',
         as_attachment=True,
-        download_name="whitelist.json"
-    )
-
-@app.route('/settings/export-blacklist', methods=["GET"])
-@login_required
-def export_blacklist():
-    blacklist_path = os.path.join(app.root_path, "blacklist.json")
-    lock_path = blacklist_path + ".lock"
-
-    if not os.path.exists(blacklist_path):
-        return "Aucun fichier blacklist.json à exporter", 404
-
-    try:
-        with FileLock(lock_path, timeout=5):
-            with open(blacklist_path, "rb") as f:
-                file_content = f.read()
-    except Exception as e:
-        app.logger.error(f"Erreur export blacklist: {e}")
-        return "Erreur lors de la lecture du fichier", 500
-
-    return send_file(
-        BytesIO(file_content),
-        mimetype='application/json',
-        as_attachment=True,
-        download_name="blacklist.json"
+        download_name="export_lists.json"
     )
 
 @app.route('/settings/export-logs', methods=["GET"])

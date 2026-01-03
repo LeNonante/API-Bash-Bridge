@@ -481,3 +481,33 @@ def toggle_access_rule(rule_id):
         db.session.commit()
         return True
     return False
+
+def export_commands_to_json():
+    routes = Route.query.all()
+    result = []
+    for r in routes:
+        result.append({
+            "command": r.command,
+            "description": r.description,
+            "hashed_token": r.hashed_token,
+            "id": r.id,
+            "active": r.is_active,
+            "path": r.path,
+            "tags": r.tags.split(',') if r.tags else [],
+            "method": r.method,
+            "return_output": r.return_output
+        })
+    return json.dumps(result, indent=4, ensure_ascii=False)
+
+def export_access_rules_to_json():
+    rules = AccessRule.query.all()
+    result = []
+    for r in rules:
+        result.append({
+            "id": r.id,
+            "ip": r.ip_address,
+            "description": r.description,
+            "active": r.is_active,
+            "type": r.rule_type
+        })
+    return json.dumps(result, indent=4, ensure_ascii=False)
