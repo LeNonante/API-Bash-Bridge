@@ -365,7 +365,7 @@ def settings():
             if not success:
                 context["import_lists_error"] = message
             else :
-                context["import_lists_success"] = "Fichier importé et sauvegardé."
+                context["import_lists_success"] = message
                 
             context["whitelist"] = get_whitelist()
             context["blacklist"] = get_blacklist()
