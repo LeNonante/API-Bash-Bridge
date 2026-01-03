@@ -10,3 +10,4 @@ Pillow
 Flask-WTF
 flask-talisman
 filelock
+flask-limiter

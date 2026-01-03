@@ -22,6 +22,8 @@ import sys
 from flask_wtf.csrf import CSRFProtect
 from flask_talisman import Talisman
 from filelock import FileLock
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 app = Flask(__name__)
 csrf = CSRFProtect(app) # Active la protection sur toute l'app. Permet d'ajouter des tokens CSRF uniques dans les formulaires.
@@ -30,6 +32,14 @@ csrf = CSRFProtect(app) # Active la protection sur toute l'app. Permet d'ajouter
 # content_security_policy=None : On désactive la CSP stricte pour ne pas casser nos scripts inline actuels (ex: login.html, settings.html)
 # force_https=False : À mettre sur True uniquement si on a un certificat SSL/HTTPS actif.
 #Talisman(app, content_security_policy=None, force_https=False)
+
+# On utilise get_remote_address pour identifier l'utilisateur par son IP.
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["2000 per day", "500 per hour"], # Limites globales par défaut (optionnel)
+    storage_uri="memory://" # Stockage en mémoire RAM (suffisant pour une instance unique)
+)
 
 # Création d'un filtre qui injecte l'ID dans chaque log
 class RequestIdFilter(logging.Filter):
@@ -187,6 +197,7 @@ def register():
     return render_template('register.html')
 
 @app.route('/login', methods=["GET", "POST"])
+@limiter.limit("5 per minute", methods=["POST"])  # Limite uniquement les tentatives de connexion (POST)
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
