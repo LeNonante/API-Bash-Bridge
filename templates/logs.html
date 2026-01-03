@@ -4,42 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>API-Bash Bridge - Logs</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='settings.css') }}">
-    <style>
-        /* Style spécifique pour les logs */
-        .logs-container {
-            background-color: #0f172a;
-            color: #e2e8f0;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid rgba(71, 85, 105, 0.6);
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            height: 70vh;
-            overflow-y: auto;
-            line-height: 1.5;
-        }
-        .log-entry {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 2px 0;
-        }
-        .log-entry:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-        }
-        /* Coloration syntaxique simple */
-        .log-info { color: #3b82f6; }
-        .log-warning { color: #f59e0b; }
-        .log-error { color: #ef4444; }
-        .tag-echec {
-            color: #ef4444; /* Rouge */
-            font-weight: bold;
-        }
-        .tag-succes {
-            color: #22c55e; /* Vert */
-            font-weight: bold;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='logs.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
 </head>
 <body>
     <nav class="navbar">
@@ -98,6 +65,14 @@
             </div>
         </div>
 
+        <div class="search-bar">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+                <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <input id="logSearch" type="text" placeholder="Filtrer les logs (ex: [ECHEC], ID de requête, IP, date, heure...)">
+        </div>
+
         <div class="logs-container">
             {% for line in logs %}
                 {% set formatted_line = line | e 
@@ -126,6 +101,24 @@
     </main>
 
     <script>
+        document.getElementById('logSearch').addEventListener('keyup', function() {
+            // 1. On récupère le texte tapé et on le met en minuscule
+            var filter = this.value.toLowerCase();
+            
+            // 2. On récupère toutes les lignes de logs
+            var logs = document.querySelectorAll('.log-entry');
+            
+            // 3. On boucle sur chaque ligne
+            logs.forEach(function(log) {
+                // Si le texte de la ligne contient la recherche, on affiche, sinon on cache
+                if (log.textContent.toLowerCase().includes(filter)) {
+                    log.style.display = "";
+                } else {
+                    log.style.display = "none";
+                }
+            });
+        });
+
         // Toggle mobile menu
         const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
         const mobileMenu = document.querySelector('.mobile-menu');
