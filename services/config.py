@@ -8,7 +8,8 @@ import qrcode
 import sys
 import time
 from filelock import FileLock
-
+from database.extensions import db
+from database.models import Route, AccessRule
 
 # Variables globales pour le cache
 LAST_CHECK_TIME = 0
@@ -131,92 +132,6 @@ def initMode(env_file, mode):
 def getMode():
     return os.getenv("MODE", "WHITELIST")
 
-def load_ip_list(filename):
-    """Charge la liste des IPs depuis un fichier JSON"""
-    try:
-        with open(filename, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return []
-    except Exception as e:
-        print(f"Erreur lecture {filename}: {e}")
-        return []
-
-def save_ip_list(filename, ip_list):
-    """Sauvegarde la liste des IPs dans un fichier JSON"""
-    try:
-        with open(filename, 'w', encoding='utf-8') as f:
-            json.dump(ip_list, f, indent=4, ensure_ascii=False)
-        return True
-    except Exception as e:
-        print(f"Erreur sauvegarde {filename}: {e}")
-        return False
-
-def add_ip_to_list(filename, ip, description=""):
-    """Ajoute une IP à la liste"""
-    lock_path = filename + ".lock"  # Créera whitelist.json.lock
-    with FileLock(lock_path, timeout=10):
-        ip_list = load_ip_list(filename)
-        
-        # Vérifier que l'IP n'existe pas déjà
-        if any(item['ip'] == ip for item in ip_list):
-            return False, "Cette IP existe déjà"
-        
-        # Créer le nouvel ID
-        new_id = max((item.get('id', 0) for item in ip_list), default=0) + 1
-        
-        new_item = {
-            "ip": ip,
-            "description": description,
-            "active": True,
-            "id": new_id
-        }
-        
-        ip_list.append(new_item)
-        if save_ip_list(filename, ip_list):
-            return True, "IP ajoutée avec succès"
-        return False, "Erreur lors de l'ajout"
-
-def remove_ip_from_list(filename, ip_id):
-    """Supprime une IP de la liste"""
-    lock_path = filename + ".lock"  # Créera whitelist.json.lock
-    with FileLock(lock_path, timeout=10):
-        ip_list = load_ip_list(filename)
-        ip_list = [item for item in ip_list if item['id'] != ip_id]
-        
-        if save_ip_list(filename, ip_list):
-            return True, "IP supprimée avec succès"
-        return False, "Erreur lors de la suppression"
-
-def toggle_ip_in_list(filename, ip_id):
-    """Active/désactive une IP dans la liste"""
-    lock_path = filename + ".lock"  # Créera whitelist.json.lock
-    with FileLock(lock_path, timeout=10):
-        ip_list = load_ip_list(filename)
-        
-        for item in ip_list:
-            if item['id'] == ip_id:
-                item['active'] = not item['active']
-                if save_ip_list(filename, ip_list):
-                    return True, item['active']
-                return False, None
-        
-        return False, None
-
-def update_ip_in_list(filename, ip_id, description=""):
-    """Met à jour la description d'une IP"""
-    lock_path = filename + ".lock"  # Créera whitelist.json.lock
-    with FileLock(lock_path, timeout=10):
-        ip_list = load_ip_list(filename)
-        
-        for item in ip_list:
-            if item['id'] == ip_id:
-                item['description'] = description
-                if save_ip_list(filename, ip_list):
-                    return True, "IP mise à jour avec succès"
-                return False, "Erreur lors de la mise à jour"
-        
-        return False, "IP non trouvée"
 
 def create_qr_code(secret_key):
     # On prépare les infos pour Google Authenticator
@@ -257,17 +172,192 @@ def activate_2fa(env_file, activate=True):
     
 def is2FAEnabled():
     return os.getenv("ENABLE_2FA", "FALSE") == "TRUE"
+    
+    
+#SQL ALCHEMY FUNCTIONS---------------------------
 
-def verify_and_save_commands_file(file_storage, save_path):
+def get_commands():
+    # .all() récupère tout
+    routes = Route.query.all()
+    result = []
+    for r in routes:
+        result.append({
+            "command": r.command,
+            "description": r.description,
+            "hashed_token": r.hashed_token,
+            "id": r.id,
+            "active": r.is_active,
+            "path": r.path,
+            "tags": r.tags.split(',') if r.tags else [],
+            "method": r.method,
+            "return_output": r.return_output
+        })
+    return result
+
+def is_command_active(command_id):
+    route = Route.query.filter_by(id=command_id).first()
+    if route:
+        return route.is_active
+    return False
+
+def toggle_command_active(command_id):
+    route = Route.query.filter_by(id=command_id).first()
+    if route:
+        route.is_active = not route.is_active
+        db.session.commit()
+        return True
+    return False
+
+def set_command_hashed_token(command_id, token):
+    route = Route.query.filter_by(id=command_id).first()
+    if route:
+        route.hashed_token = token
+        db.session.commit()
+        return True
+    return False
+
+def get_command(command_id):
+    route = Route.query.filter_by(id=command_id).first()
+    if route:
+        return {
+            "command": route.command,
+            "description": route.description,
+            "hashed_token": route.hashed_token,
+            "id": route.id,
+            "active": route.is_active,
+            "path": route.path,
+            "tags": route.tags.split(',') if route.tags else [],
+            "method": route.method,
+            "return_output": route.return_output
+        }
+    return None
+
+def edit_command(new_route):
+    route = Route.query.filter_by(id=new_route["id"]).first()
+    if route:
+        route.path = new_route["path"]
+        route.command = new_route["command"]
+        route.description = new_route["description"]
+        route.is_active = new_route["active"]
+        route.hashed_token = new_route["hashed_token"]
+        route.return_output = new_route["return_output"]
+        route.tags = ','.join(new_route["tags"]) if isinstance(new_route["tags"], list) else new_route["tags"]
+        db.session.commit()
+        return True
+    return False
+
+def add_command(new_route):
+    route = Route(
+        path=new_route["path"],
+        method=new_route["method"],
+        command=new_route["command"],
+        description=new_route["description"],
+        is_active=new_route["active"],
+        hashed_token=new_route["hashed_token"],
+        return_output=new_route["return_output"],
+        tags=','.join(new_route["tags"]) if isinstance(new_route["tags"], list) else new_route["tags"]
+    )
+    db.session.add(route)
+    db.session.commit()
+    return route.id
+
+def delete_command(command_id):
+    route = Route.query.filter_by(id=command_id).first()
+    if route:
+        db.session.delete(route)
+        db.session.commit()
+        return True
+    return False
+
+def get_whitelist():
+    rules = AccessRule.query.filter_by(rule_type="whitelist").all()
+    result = []
+    for r in rules:
+        result.append({
+            "id": r.id,
+            "ip": r.ip_address,
+            "description": r.description,
+            "active": r.is_active
+        })
+    return result
+
+def get_blacklist():
+    rules = AccessRule.query.filter_by(rule_type="blacklist").all()
+    result = []
+    for r in rules:
+        result.append({
+            "id": r.id,
+            "ip": r.ip_address,
+            "description": r.description,
+            "active": r.is_active
+        })
+    return result
+
+def add_access_rule(ip_address, description, rule_type):
+    rule = AccessRule(
+        ip_address=ip_address,
+        description=description,
+        rule_type=rule_type,
+        is_active=True
+    )
+    db.session.add(rule)
+    db.session.commit()
+    return rule.id
+
+def remove_access_rule(rule_id):
+    rule = AccessRule.query.filter_by(id=rule_id).first()
+    if rule:
+        db.session.delete(rule)
+        db.session.commit()
+        return True
+    return False
+
+def toggle_access_rule(rule_id):
+    rule = AccessRule.query.filter_by(id=rule_id).first()
+    if rule:
+        rule.is_active = not rule.is_active
+        db.session.commit()
+        return True
+    return False
+
+def export_commands_to_json():
+    routes = Route.query.all()
+    result = []
+    for r in routes:
+        result.append({
+            "command": r.command,
+            "description": r.description,
+            "hashed_token": r.hashed_token,
+            "id": r.id,
+            "active": r.is_active,
+            "path": r.path,
+            "tags": r.tags.split(',') if r.tags else [],
+            "method": r.method,
+            "return_output": r.return_output
+        })
+    return json.dumps(result, indent=4, ensure_ascii=False)
+
+def export_access_rules_to_json():
+    rules = AccessRule.query.all()
+    result = []
+    for r in rules:
+        result.append({
+            "id": r.id,
+            "ip": r.ip_address,
+            "description": r.description,
+            "active": r.is_active,
+            "type": r.rule_type
+        })
+    return json.dumps(result, indent=4, ensure_ascii=False)
+
+def import_commands_from_json(file_storage, replace_existing=True):
     """
-    Vérifie et sauvegarde le fichier de commandes.
+    Vérifie et sauvegarde le fichier de commandes dans la base de données.
     Retourne (Succès: bool, Message: str)
     """
-    lock_path = save_path + ".lock" # <--- AJOUT
     try:
         # On charge le JSON en mémoire pour vérifier sa validité
         data = json.load(file_storage)
-        
         # Vérification 1: Est-ce une liste ?
         if not isinstance(data, list):
             return False, "Le fichier doit contenir une liste d'objets JSON (tableau [])."
@@ -282,36 +372,45 @@ def verify_and_save_commands_file(file_storage, save_path):
             if not required_keys.issubset(item.keys()):
                 missing = required_keys - item.keys()
                 return False, f"Format invalide à l'index {index}. Clés manquantes: {missing}"
-
-        # Si tout est bon, on sauvegarde proprement le fichier en le vérouillant pendant l'écriture
-        # (Cela permet aussi de reformater le JSON correctement avec l'indentation)
-        with FileLock(lock_path, timeout=10):
-            with open(save_path, 'w', encoding='utf-8') as f:
-                json.dump(data, f, indent=4, ensure_ascii=False)
             
-        return True, "Configuration importée et validée avec succès."
-        
+        # Si tout est bon, on import le fichier dans la base de données
+        if replace_existing:
+            db.session.query(Route).delete()
+        count = 0
+        for info in data:
+            route = Route(
+                path=info.get('path', ''),
+                command=info.get('command', ''),
+                description=info.get('description', ''),
+                is_active=info.get('active', True),
+                hashed_token=info.get('hashed_token', ''),
+                return_output=info.get('return_output', False),
+                tags=','.join(info.get('tags', [])),
+                method=info.get('method', 'GET'),
+            )
+            db.session.add(route)
+            count += 1
+        db.session.commit()
+        return True, f"Configuration importée et validée avec succès. {count} routes ajoutées."
     except json.JSONDecodeError:
         return False, "Le fichier fourni n'est pas un JSON valide."
     except Exception as e:
         return False, f"Erreur lors de l'import : {str(e)}"
     
-def verify_and_save_list_file(file_storage, save_path):
+def import_access_rules_from_json(file_storage, replace_existing=True):
     """
-    Vérifie et sauvegarde un fichier de liste (black/whitelist).
+    Vérifie et sauvegarde le fichier de lists dans la base de données.
     Retourne (Succès: bool, Message: str)
     """
-    lock_path = save_path + ".lock"
     try:
         # On charge le JSON en mémoire pour vérifier sa validité
         data = json.load(file_storage)
-        
         # Vérification 1: Est-ce une liste ?
         if not isinstance(data, list):
             return False, "Le fichier doit contenir une liste d'objets JSON (tableau [])."
         
         # Vérification 2: Les clés obligatoires sont-elles présentes ?
-        required_keys = {"id", "description", "ip", "active"}
+        required_keys = {"id", "ip", "description", "active", "type"}
         for index, item in enumerate(data):
             if not isinstance(item, dict):
                 return False, f"L'élément à l'index {index} n'est pas un objet JSON valide."
@@ -320,16 +419,24 @@ def verify_and_save_list_file(file_storage, save_path):
             if not required_keys.issubset(item.keys()):
                 missing = required_keys - item.keys()
                 return False, f"Format invalide à l'index {index}. Clés manquantes: {missing}"
-
-        # Si tout est bon, on sauvegarde proprement le fichier en le vérouillant pendant l'écriture
-        # (Cela permet aussi de reformater le JSON correctement avec l'indentation)
-        with FileLock(lock_path, timeout=10):
-            with open(save_path, 'w', encoding='utf-8') as f:
-                json.dump(data, f, indent=4, ensure_ascii=False)
             
-        return True, "Configuration importée et validée avec succès."
-        
+        # Si tout est bon, on import le fichier dans la base de données
+        if replace_existing:
+            db.session.query(AccessRule).delete()
+        count = 0
+        for info in data:
+            access_rule = AccessRule(
+                ip_address=info.get('ip', ''),
+                description=info.get('description', ''),
+                is_active=info.get('active', True),
+                rule_type=info.get('type', ''),
+            )
+            db.session.add(access_rule)
+            count += 1
+        db.session.commit()
+        return True, f"Configuration importée et validée avec succès. {count} règles ajoutées."
     except json.JSONDecodeError:
         return False, "Le fichier fourni n'est pas un JSON valide."
     except Exception as e:
         return False, f"Erreur lors de l'import : {str(e)}"
+    

@@ -5,10 +5,13 @@ __pycache__/
 
 test.py
 qrcode_2fa.png
+init_db.py
 # json files used for configuration or data
 commandes.json
 whitelist.json
 blacklist.json
+lists.json
+init
 # C extensions
 *.so
 
