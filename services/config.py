@@ -132,92 +132,6 @@ def initMode(env_file, mode):
 def getMode():
     return os.getenv("MODE", "WHITELIST")
 
-def load_ip_list(filename):
-    """Charge la liste des IPs depuis un fichier JSON"""
-    try:
-        with open(filename, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return []
-    except Exception as e:
-        print(f"Erreur lecture {filename}: {e}")
-        return []
-
-def save_ip_list(filename, ip_list):
-    """Sauvegarde la liste des IPs dans un fichier JSON"""
-    try:
-        with open(filename, 'w', encoding='utf-8') as f:
-            json.dump(ip_list, f, indent=4, ensure_ascii=False)
-        return True
-    except Exception as e:
-        print(f"Erreur sauvegarde {filename}: {e}")
-        return False
-
-def add_ip_to_list(filename, ip, description=""):
-    """Ajoute une IP à la liste"""
-    lock_path = filename + ".lock"  # Créera whitelist.json.lock
-    with FileLock(lock_path, timeout=10):
-        ip_list = load_ip_list(filename)
-        
-        # Vérifier que l'IP n'existe pas déjà
-        if any(item['ip'] == ip for item in ip_list):
-            return False, "Cette IP existe déjà"
-        
-        # Créer le nouvel ID
-        new_id = max((item.get('id', 0) for item in ip_list), default=0) + 1
-        
-        new_item = {
-            "ip": ip,
-            "description": description,
-            "active": True,
-            "id": new_id
-        }
-        
-        ip_list.append(new_item)
-        if save_ip_list(filename, ip_list):
-            return True, "IP ajoutée avec succès"
-        return False, "Erreur lors de l'ajout"
-
-def remove_ip_from_list(filename, ip_id):
-    """Supprime une IP de la liste"""
-    lock_path = filename + ".lock"  # Créera whitelist.json.lock
-    with FileLock(lock_path, timeout=10):
-        ip_list = load_ip_list(filename)
-        ip_list = [item for item in ip_list if item['id'] != ip_id]
-        
-        if save_ip_list(filename, ip_list):
-            return True, "IP supprimée avec succès"
-        return False, "Erreur lors de la suppression"
-
-def toggle_ip_in_list(filename, ip_id):
-    """Active/désactive une IP dans la liste"""
-    lock_path = filename + ".lock"  # Créera whitelist.json.lock
-    with FileLock(lock_path, timeout=10):
-        ip_list = load_ip_list(filename)
-        
-        for item in ip_list:
-            if item['id'] == ip_id:
-                item['active'] = not item['active']
-                if save_ip_list(filename, ip_list):
-                    return True, item['active']
-                return False, None
-        
-        return False, None
-
-def update_ip_in_list(filename, ip_id, description=""):
-    """Met à jour la description d'une IP"""
-    lock_path = filename + ".lock"  # Créera whitelist.json.lock
-    with FileLock(lock_path, timeout=10):
-        ip_list = load_ip_list(filename)
-        
-        for item in ip_list:
-            if item['id'] == ip_id:
-                item['description'] = description
-                if save_ip_list(filename, ip_list):
-                    return True, "IP mise à jour avec succès"
-                return False, "Erreur lors de la mise à jour"
-        
-        return False, "IP non trouvée"
 
 def create_qr_code(secret_key):
     # On prépare les infos pour Google Authenticator
@@ -263,7 +177,7 @@ def is2FAEnabled():
 #SQL ALCHEMY FUNCTIONS---------------------------
 
 def get_commands():
-    # .all() récupère tout, c'est l'équivalent du JSON complet
+    # .all() récupère tout
     routes = Route.query.all()
     result = []
     for r in routes:
