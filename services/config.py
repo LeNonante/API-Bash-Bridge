@@ -10,6 +10,8 @@ import time
 from filelock import FileLock
 from database.extensions import db
 from database.models import Route, AccessRule
+from sqlalchemy.exc import IntegrityError
+
 
 # Variables globales pour le cache
 LAST_CHECK_TIME = 0
@@ -394,8 +396,11 @@ def import_commands_from_json(file_storage, replace_existing=True):
         return True, f"Configuration importée et validée avec succès. {count} routes ajoutées."
     except json.JSONDecodeError:
         return False, "Le fichier fourni n'est pas un JSON valide."
+    except IntegrityError as e:
+        db.session.rollback()
+        return False, "Une route importée possède une URL qui existe déjà."
     except Exception as e:
-        return False, f"Erreur lors de l'import : {str(e)}"
+        return False, f"Erreur lors de l'import ({type(e).__name__}): {str(e)}"
     
 def import_access_rules_from_json(file_storage, replace_existing=True):
     """
@@ -437,6 +442,9 @@ def import_access_rules_from_json(file_storage, replace_existing=True):
         return True, f"Configuration importée et validée avec succès. {count} règles ajoutées."
     except json.JSONDecodeError:
         return False, "Le fichier fourni n'est pas un JSON valide."
+    except IntegrityError as e:
+        db.session.rollback()
+        return False, "Le fichier contient une ou plusieurs adresses IP déjà présentes dans leur liste respective (blanche ou noire)."
     except Exception as e:
         return False, f"Erreur lors de l'import : {str(e)}"
     

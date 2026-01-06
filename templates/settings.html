@@ -184,7 +184,7 @@
             <!-- Exporter / Importer -->
             <div class="login-card settings-card">
                 <h2>Exporter / Importer la configuration</h2>
-                <p class="description">Exportez le fichier commandes.json actuel ou importez un nouveau JSON pour remplacer la configuration.</p>
+                <p class="description">Exportez le fichier commandes.json actuel ou importez un JSON pour compléter (ou remplacer) la configuration actuelle.</p>
 
                 <div class="button-row">
                     <a class="btn-secondary" href="/settings/export">Exporter commandes.json</a>
@@ -202,6 +202,17 @@
                     <input type="hidden" name="action" value="importCommands">
                     <div class="form-group">
                         <label for="commands_file">Importer un fichier JSON</label>
+                            <div class="checkbox-wrapper" style="display: flex; align-items: flex-start;">
+                            <input 
+                                type="checkbox" 
+                                id="replace_existing" 
+                                name="replace_existing" 
+                                style="width: 18px; height: 18px; margin-right: 12px; margin-top: 2px; cursor: pointer; flex-shrink: 0;"
+                            >
+                            <label for="replace_existing" style="cursor: pointer; font-weight: 600; font-size: 0.85em; display: block; margin-bottom: 4px; color: #f8fafc; text-transform: uppercase; letter-spacing: 0.5px;">
+                                Remplacer la configuration actuelle
+                            </label>
+                            </div>
                         <div class="input-wrapper file-input-wrapper">
                             <input type="file" id="commands_file" name="commands_file" accept=".json" required>
                         </div>
@@ -228,6 +239,17 @@
                     <input type="hidden" name="action" value="importLists">
                     <div class="form-group">
                         <label for="list_file">Importer un fichier JSON</label>
+                        <div class="checkbox-wrapper" style="display: flex; align-items: flex-start;">
+                            <input 
+                                type="checkbox" 
+                                id="replace_existing" 
+                                name="replace_existing" 
+                                style="width: 18px; height: 18px; margin-right: 12px; margin-top: 2px; cursor: pointer; flex-shrink: 0;"
+                            >
+                            <label for="replace_existing" style="cursor: pointer; font-weight: 600; font-size: 0.85em; display: block; margin-bottom: 4px; color: #f8fafc; text-transform: uppercase; letter-spacing: 0.5px;">
+                                Remplacer la configuration actuelle
+                            </label>
+                        </div>
                         <div class="input-wrapper file-input-wrapper">
                             <input type="file" id="list_file" name="list_file" accept=".json" required>
                         </div>

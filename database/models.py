@@ -29,3 +29,11 @@ class AccessRule(db.Model):
     description = db.Column(db.String(200))
     rule_type = db.Column(db.String(10)) # 'whitelist' ou 'blacklist'
     is_active = db.Column(db.Boolean, default=True)
+
+    __table_args__ = ( #On definit le couple (Ip/type de liste) en unique
+        db.UniqueConstraint(
+            "ip_address",
+            "rule_type",
+            name="uq_accessrule_ip_ruletype"
+        ),
+    )

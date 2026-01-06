@@ -28,6 +28,8 @@ from flask_sqlalchemy import SQLAlchemy
 from database.extensions import db
 from database.models import Route, AccessRule
 import io
+from sqlalchemy.exc import IntegrityError
+
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 app = Flask(__name__)
@@ -278,8 +280,8 @@ def settings():
                 context["import_error"] = "Le fichier doit être au format JSON."
                 return render_template('settings.html', **context)
  
-            save_path = os.path.join(app.root_path, "commandes.json")
-            success, message = import_commands_from_json(uploaded_file, True)
+            replace_existing = request.form.get("replace_existing") == "on"
+            success, message = import_commands_from_json(uploaded_file, replace_existing)
             
             if not success:
                 context["import_error"] = message
@@ -360,7 +362,8 @@ def settings():
                 context["import_lists_error"] = "Le fichier doit être au format JSON."
                 return render_template('settings.html', **context)
             
-            success, message = import_access_rules_from_json(uploaded_file, True)
+            replace_existing = request.form.get("replace_existing") == "on"
+            success, message = import_access_rules_from_json(uploaded_file, replace_existing)
             
             if not success:
                 context["import_lists_error"] = message
