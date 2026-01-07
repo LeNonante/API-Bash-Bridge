@@ -244,9 +244,13 @@ def edit_command(new_route):
         route.hashed_token = new_route["hashed_token"]
         route.return_output = new_route["return_output"]
         route.tags = ','.join(new_route["tags"]) if isinstance(new_route["tags"], list) else new_route["tags"]
-        db.session.commit()
-        return True
-    return False
+        try :
+            db.session.commit()
+            return True, "Route sauvegardée avec succès."
+        except IntegrityError as e:
+            db.session.rollback()
+            return False, f"La route {new_route["path"]} existe déja."
+    return False, "La route demandée , n'a pas été trouvée."
 
 def add_command(new_route):
     try:

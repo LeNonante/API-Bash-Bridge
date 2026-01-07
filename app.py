@@ -521,10 +521,13 @@ def edit_route(route_id):
             route["tags"] = [tag.strip() for tag in request.form.get("tags", "").split(",") if tag.strip()]
             route["return_output"] = request.form.get("return_output") == "on"
 
-            edit_command(route)
-            
-            context["route"] = route  # Mise à jour de l'objet route dans le contexte
-            context["success"] = "Route sauvegardée avec succès."
+            success, message = edit_command(route)
+            if success :
+                context["route"] = route  # Mise à jour de l'objet route dans le contexte
+                context["success"] = message
+            else :
+                context["route"] = route
+                context["error"] = message
             return render_template('edit_route.html', **context)
         
         elif action == "test":
