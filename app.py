@@ -322,9 +322,13 @@ def settings():
                 try:
                     # Valider l'IP
                     ipaddress.ip_address(ip_address)
-                    add_access_rule(ip_address, ip_description, list_type)
-                    context[f"{list_type}_success"] = "IP ajoutée avec succès"
-                    context[list_type] = get_whitelist() if list_type == "whitelist" else get_blacklist()
+                    sucess, info = add_access_rule(ip_address, ip_description, list_type)
+                    if sucess :
+                        context[f"{list_type}_success"] = "IP ajoutée avec succès"
+                        context[list_type] = get_whitelist() if list_type == "whitelist" else get_blacklist()
+                    else :
+                        context[f"{list_type}_error"] = info
+                        context[list_type] = get_whitelist() if list_type == "whitelist" else get_blacklist()
                     
                 except ValueError:
                     context[f"{list_type}_error"] = "L'adresse IP n'est pas valide."
@@ -592,10 +596,22 @@ def create_route():
         
         if not re.match(pattern_path_route, path):
             error = "Le chemin de la route contient des caractères invalides. Seules les lettres (min, maj), chiffres, tirets (-), underscores (_) et slashs (/) sont autorisés."
-            return render_template('new_route.html', api_prefix=getApiPrefix(), new_token=request.form.get("token_value"), error=error, **request.form)
+            # 1. On copie les données du formulaire pour ne pas modifier l'objet original
+            form_data = request.form.copy()
+            # 2. On retire le csrf_token s'il existe (pour ne pas écraser la fonction) et pouvoir reijecter les infos rentrées dans la page sans conflit de token
+            form_data.pop('csrf_token', None)
+            return render_template('new_route.html', api_prefix=getApiPrefix(), new_token=request.form.get("token_value"), error=error, **form_data)
         
-        new_id=add_command(new_route)
-        return redirect(url_for('edit_route', route_id=new_id))
+        sucess, info = add_command(new_route)
+        if sucess :
+            new_id=info
+            return redirect(url_for('edit_route', route_id=new_id))
+        else :
+            # 1. On copie les données du formulaire pour ne pas modifier l'objet original
+            form_data = request.form.copy()
+            # 2. On retire le csrf_token s'il existe (pour ne pas écraser la fonction) et pouvoir reijecter les infos rentrées dans la page sans conflit de token
+            form_data.pop('csrf_token', None)
+            return render_template('new_route.html', api_prefix=getApiPrefix(), new_token=request.form.get("token_value"), error=info, **form_data)
 
     else :
         token=secrets.token_urlsafe(32)    

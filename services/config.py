@@ -249,7 +249,8 @@ def edit_command(new_route):
     return False
 
 def add_command(new_route):
-    route = Route(
+    try:
+        route = Route(
         path=new_route["path"],
         method=new_route["method"],
         command=new_route["command"],
@@ -258,10 +259,15 @@ def add_command(new_route):
         hashed_token=new_route["hashed_token"],
         return_output=new_route["return_output"],
         tags=','.join(new_route["tags"]) if isinstance(new_route["tags"], list) else new_route["tags"]
-    )
-    db.session.add(route)
-    db.session.commit()
-    return route.id
+        )
+        db.session.add(route)
+        db.session.commit()
+        return True, route.id
+    
+    except IntegrityError as e:
+        db.session.rollback()
+        return False, f"Impossible d'ajouter cette route, le chemin '{new_route["path"]} est déja utilisé'."
+
 
 def delete_command(command_id):
     route = Route.query.filter_by(id=command_id).first()
@@ -296,15 +302,19 @@ def get_blacklist():
     return result
 
 def add_access_rule(ip_address, description, rule_type):
-    rule = AccessRule(
-        ip_address=ip_address,
-        description=description,
-        rule_type=rule_type,
-        is_active=True
-    )
-    db.session.add(rule)
-    db.session.commit()
-    return rule.id
+    try :
+        rule = AccessRule(
+            ip_address=ip_address,
+            description=description,
+            rule_type=rule_type,
+            is_active=True
+        )
+        db.session.add(rule)
+        db.session.commit()
+        return True, rule.id
+    except IntegrityError as e:
+        db.session.rollback()
+        return False, "Impossible d'ajouter cette IP, elle existe déja dans ce mode."
 
 def remove_access_rule(rule_id):
     rule = AccessRule.query.filter_by(id=rule_id).first()

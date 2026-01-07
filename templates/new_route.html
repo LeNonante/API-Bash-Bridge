@@ -117,7 +117,7 @@
                         <label>Tags</label>
                         <p class="description-variables">Séparez les tags par des virgules.</p>
                         <div class="input-wrapper">
-                            <input type="text" name="tags" class="form-input" placeholder="deploy, prod" >
+                            <input type="text" name="tags" class="form-input" placeholder="deploy, prod" value="{{ tags }}">
                         </div>
                     </div>
 
@@ -128,6 +128,7 @@
                                 id="return_output" 
                                 name="return_output" 
                                 style="width: 18px; height: 18px; margin-right: 12px; margin-top: 2px; cursor: pointer; flex-shrink: 0;"
+                                {% if return_output %}checked{% endif %}
                             >
                             <label for="return_output" style="cursor: pointer; font-weight: 600; font-size: 0.85em; display: block; margin-bottom: 4px; color: #f8fafc; text-transform: uppercase; letter-spacing: 0.5px;">
                                 Retourner la sortie de la commande dans la réponse API
