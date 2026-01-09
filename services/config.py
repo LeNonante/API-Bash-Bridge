@@ -147,6 +147,10 @@ def create_qr_code(secret_key):
 
     img = qrcode.make(uri)
     nom_fichier = "static/img/qrcode_2fa.png"
+
+    # S'assurer que le dossier existe avant de sauvegarder
+    os.makedirs(os.path.dirname(nom_fichier), exist_ok=True)
+
     img.save(nom_fichier)
     return nom_fichier
 
