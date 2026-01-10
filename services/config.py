@@ -9,7 +9,7 @@ import sys
 import time
 from filelock import FileLock
 from database.extensions import db
-from database.models import Route, AccessRule
+from database.models import Route, AccessRule, User
 from sqlalchemy.exc import IntegrityError
 
 
@@ -30,16 +30,39 @@ def getSecretKey() :
     return os.getenv("SECRET_KEY")
 
 def isThereAdmin() :
-    return os.getenv("ADMIN_PASSWORD") is not None
+    admin = User.query.filter_by(username="admin").first()
+    return admin is not None
 
-def setAdminPassword(env_file,password) :
+def setAdminPassword(password) :
     hashed_password=generate_password_hash(password)
-    set_key(env_file, "ADMIN_PASSWORD", hashed_password)
-    load_dotenv(override=True)
+    if isThereAdmin() :
+        #Modification du mot de passe admin existant
+        admin = User.query.filter_by(username="admin").first()
+        admin.password_hash = hashed_password
+        db.session.commit()
+    else :
+        #Création du compte admin
+        admin = User(
+            username="admin",
+            password_hash=hashed_password
+        )
+        db.session.add(admin)
+        db.session.commit()
 
-def checkAdminPassword(password) :
-    registered_password = os.getenv("ADMIN_PASSWORD")
-    return check_password_hash(registered_password, password)
+def setUserPassword(username, password) :
+    hashed_password=generate_password_hash(password)
+    user = User.query.filter_by(username=username).first()
+    if user:
+        user.password_hash = hashed_password
+        db.session.commit()
+        return True
+    return False
+
+def checkUserPassword(username, password) :
+    user = User.query.filter_by(username=username).first()
+    if user:
+        return check_password_hash(user.password_hash, password)
+    return False
 
 def getApiPrefix():
     prefix = os.getenv("API_PREFIX")

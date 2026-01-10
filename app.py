@@ -183,7 +183,7 @@ def register():
                 return render_template('register.html', erreur="Les mots de passe ne correspondent pas. Veuillez réessayer.")
             
             else :        
-                setAdminPassword(".env",admin_password)
+                setAdminPassword(admin_password)
                 if request.form.get("enable_2fa") :
                     activate_2fa(".env", True)
                 else :
@@ -209,16 +209,17 @@ def login():
     if request.method == "POST":
         if request.form.get("action")=="loginUser":
             # Traitement du formulaire d'inscription
+            username = request.form.get("username")
             password = request.form.get("password")
-            if checkAdminPassword(password):
+            if checkUserPassword(username, password):
                 if A2F_enabled:
                     code_2fa = request.form.get("2fa_code")
                     if not verify_code(code_2fa):
                         return render_template('login.html', erreur="Code 2FA incorrect.", A2F_enabled=A2F_enabled)
-                login_user(User("admin"))
+                login_user(User(username))
                 return redirect(url_for('index'))  # Rediriger vers la page d'accueil après la connexion
             else:
-                return render_template('login.html', erreur="Mot de passe administrateur incorrect.", A2F_enabled=A2F_enabled)
+                return render_template('login.html', erreur="Nom d'utilisateur ou mot de passe incorrect.", A2F_enabled=A2F_enabled)
             
     return render_template('login.html', A2F_enabled=A2F_enabled)
 
@@ -254,9 +255,9 @@ def settings():
             current_password = request.form.get("current_password")
             new_password1 = request.form.get("new_password1")
             new_password2 = request.form.get("new_password2")
-
+            username = current_user.id
             # Vérifier l'ancien mot de passe
-            if not checkAdminPassword(current_password):
+            if not checkUserPassword(username, current_password):
                 context["erreur"] = "Ancien mot de passe incorrect."
                 return render_template('settings.html', **context)
 
@@ -266,7 +267,7 @@ def settings():
                 return render_template('settings.html', **context)
 
             # Mettre à jour le mot de passe admin
-            setAdminPassword(".env", new_password1)
+            setUserPassword(username, new_password1)
             context["success"] = "Mot de passe mis à jour avec succès."
             return render_template('settings.html', **context)
 

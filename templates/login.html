@@ -61,13 +61,25 @@
                     <div class="error-message">{{ erreur }}</div>
                 {% endif %}
                 <div class="form-group">
+                    <label for="username">Username</label>
+                    <div class="input-wrapper">
+                        <input 
+                            type="text" 
+                            id="username" 
+                            name="username"
+                            placeholder="Entrez le nom d'utilisateur"
+                            autocomplete="username"
+                            required
+                        >
+                    </div>
+
                     <label for="password">Mot de passe</label>
                     <div class="input-wrapper">
                         <input 
                             type="password" 
                             id="password" 
                             name="password"
-                            placeholder="Entrez le mot de passe administrateur"
+                            placeholder="Entrez le mot de passe "
                             autocomplete="current-password"
                             required
                         >
