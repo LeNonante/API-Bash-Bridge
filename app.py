@@ -215,10 +215,13 @@ def login():
             A2F_enabled = is2FAEnabled(username)
             if checkUserPassword(username, password): #Si le mot de passe est correct
                 if A2F_enabled:
-                    redirect_url = url_for('two_fa', username=username)
-                    return redirect(redirect_url)
+                    # STOCKAGE TEMPORAIRE DANS LA SESSION
+                    # On ne connecte pas encore l'utilisateur, on le met "en attente"
+                    session['pending_2fa_user'] = username
+                    return redirect(url_for('two_fa'))
                 else :
                     login_user(User(username))
+                    session.pop('pending_2fa_user', None) # Nettoyage de sécurité
                     return redirect(url_for('index'))  # Rediriger vers la page d'accueil après la connexion
             else:
                 return render_template('login.html', erreur="Nom d'utilisateur ou mot de passe incorrect.")
@@ -226,8 +229,20 @@ def login():
     return render_template('login.html')
 
 @app.route('/two_fa', methods=["GET", "POST"])
-def two_fa(username=None):
-    username = "admin"
+def two_fa():
+    username = session.get('pending_2fa_user')
+    if not username:
+        return redirect(url_for('login'))
+    if request.method == "POST":
+        if request.form.get("action")=="loginUser":
+            code_2fa = request.form.get("2fa_code")
+            if verify_code(username, code_2fa):
+                # Code 2FA correct, on connecte l'utilisateur
+                login_user(User(username))
+                session.pop('pending_2fa_user', None) # Nettoyage de sécurité
+                return redirect(url_for('index'))
+            else:
+                return render_template('login_a2f.html', username=username, erreur="Code 2FA incorrect. Veuillez réessayer.")
     return render_template('login_a2f.html', username=username)
     
 

@@ -52,10 +52,10 @@
         </div>
 
         <div class="login-card">
-            <h2>Connexion {{ current_user.id }}</h2>
+            <h2>Connexion au compte {{ username }}</h2>
             <p class="description">Vérification de la double authentification</p>
             
-            <form method="post" action="/login">
+            <form method="post" action="/two_fa">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 {% if erreur %}
                     <div class="error-message">{{ erreur }}</div>
