@@ -59,7 +59,7 @@
 
             <!-- Changer le mot de passe -->
             <div class="login-card settings-card">
-                <h2>Changer le mot de passe administrateur</h2>
+                <h2>Changer le mot de passe de votre compte</h2>
                 <p class="description">Saisissez votre ancien mot de passe, puis le nouveau (deux fois) pour confirmer.</p>
 
                 <form method="post">
@@ -99,7 +99,7 @@
 
             <div class="login-card settings-card">
                 <h2>Sécurité A2F (OTP)</h2>
-                <p class="description">Gérez l'authentification à deux facteurs pour renforcer la sécurité de l'accès administrateur.</p>
+                <p class="description">Gérez l'authentification à deux facteurs pour renforcer la sécurité de l'accès à votre compte.</p>
 
                 {% if a2f_error %}
                 <p class="error-message" style="margin-bottom: 16px;">{{ a2f_error }}</p>
@@ -132,7 +132,7 @@
                         <div class="form-group">
                             <label for="current_password_2fa">Mot de passe actuel requis pour modification</label>
                             <div class="input-wrapper">
-                                <input type="password" id="current_password_2fa" name="current_password_2fa" placeholder="Votre mot de passe admin" required>
+                                <input type="password" id="current_password_2fa" name="current_password_2fa" placeholder="Votre mot de passe" required>
                             </div>
                         </div>
                         
