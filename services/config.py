@@ -13,6 +13,7 @@ from database.models import Route, AccessRule, User
 from sqlalchemy.exc import IntegrityError
 import io
 import base64
+import secrets
 
 
 # Variables globales pour le cache
@@ -212,6 +213,10 @@ def activate_2fa(username, activate=True):
     user = User.query.filter_by(username=username).first()
     if user:
         user.is_2fa_enabled = activate
+        if activate and not user.two_fa_secret:
+            # Génération d'une nouvelle clé secrète si on active 2FA et qu'il n'y en a pas
+            secret_2fa = pyotp.random_base32()
+            user.two_fa_secret = secret_2fa
         db.session.commit()
         return True
     return False
