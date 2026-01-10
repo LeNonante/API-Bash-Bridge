@@ -169,11 +169,13 @@ def index():
 
 @app.route('/register', methods=["GET", "POST"])
 def register():
+    """
     if not isThere2FASecret(): #Si pas de clef 2FA
         # Génération de la clé secrète 2FA
         secret_2fa = pyotp.random_base32()
         set2FASecret(".env", secret_2fa)
         create_qr_code(secret_2fa)
+    """
     if request.method == "POST":
         if request.form.get("action")=="createAdminAccount":
             # Traitement du formulaire d'inscription
@@ -185,9 +187,9 @@ def register():
             else :        
                 setAdminPassword(admin_password)
                 if request.form.get("enable_2fa") :
-                    activate_2fa(".env", True)
+                    activate_2fa("admin", True)
                 else :
-                    activate_2fa(".env", False)
+                    activate_2fa("admin", False)
                 api_prefix = request.form.get("prefix")
                 if api_prefix:
                     if not re.match(pattern_prefix_api, api_prefix):
@@ -205,24 +207,29 @@ def register():
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
-    A2F_enabled = is2FAEnabled()
     if request.method == "POST":
         if request.form.get("action")=="loginUser":
             # Traitement du formulaire d'inscription
             username = request.form.get("username")
             password = request.form.get("password")
-            if checkUserPassword(username, password):
+            A2F_enabled = is2FAEnabled(username)
+            if checkUserPassword(username, password): #Si le mot de passe est correct
                 if A2F_enabled:
-                    code_2fa = request.form.get("2fa_code")
-                    if not verify_code(code_2fa):
-                        return render_template('login.html', erreur="Code 2FA incorrect.", A2F_enabled=A2F_enabled)
-                login_user(User(username))
-                return redirect(url_for('index'))  # Rediriger vers la page d'accueil après la connexion
+                    redirect_url = url_for('two_fa', username=username)
+                    return redirect(redirect_url)
+                else :
+                    login_user(User(username))
+                    return redirect(url_for('index'))  # Rediriger vers la page d'accueil après la connexion
             else:
-                return render_template('login.html', erreur="Nom d'utilisateur ou mot de passe incorrect.", A2F_enabled=A2F_enabled)
+                return render_template('login.html', erreur="Nom d'utilisateur ou mot de passe incorrect.")
             
-    return render_template('login.html', A2F_enabled=A2F_enabled)
+    return render_template('login.html')
 
+@app.route('/two_fa', methods=["GET", "POST"])
+def two_fa(username=None):
+    username = "admin"
+    return render_template('login_a2f.html', username=username)
+    
 
 @app.route('/logout')
 @login_required
@@ -245,7 +252,7 @@ def settings():
     
     context["whitelist"] = get_whitelist()
     context["blacklist"] = get_blacklist()
-    context["a2f_enabled"] = is2FAEnabled()
+    context["a2f_enabled"] = is2FAEnabled(current_user.id)
     
     if request.method == "POST":
         # Ici, on ne met PAS de verrou, car les fonctions appelées le font déjà.
@@ -385,39 +392,39 @@ def settings():
 
             # Pour désactiver ou régénérer, on vérifie le mot de passe par sécurité
             if sub_action in ["disable", "regenerate"]:
-                if not current_password or not checkAdminPassword(current_password):
+                if not current_password or not checkUserPassword(current_user.id, current_password):
                     context["a2f_error"] = "Mot de passe incorrect. Impossible de modifier l'A2F."
                     return render_template('settings.html', **context)
 
             if sub_action == "enable":
                 # Générer un secret s'il n'existe pas ou utiliser l'existant
-                if not isThere2FASecret():
+                if not isThere2FASecret(current_user.id):
                     secret = pyotp.random_base32()
-                    set2FASecret(".env", secret)
+                    set2FASecret(current_user.id, secret)
                 else:
-                    secret = get2FASecret() # On récupère via la fonction existante dans config.py
+                    secret = get2FASecret(current_user.id) # On récupère via la fonction existante dans config.py
                 
-                create_qr_code(secret)
-                activate_2fa(".env", True)
+                img_qr_code = create_qr_code(secret)
+                activate_2fa(current_user.id, True)
                 context["a2f_success"] = "A2F Activée. Scannez le QR Code ci-dessous."
                 context["show_qrcode"] = True
                 
             elif sub_action == "disable":
-                activate_2fa(".env", False)
+                activate_2fa(current_user.id, False)
                 context["a2f_success"] = "Authentification à deux facteurs désactivée."
                 
             elif sub_action == "regenerate":
                 # On écrase l'ancien secret
                 secret = pyotp.random_base32()
-                set2FASecret(".env", secret)
-                create_qr_code(secret)
+                set2FASecret(current_user.id, secret)
+                img_qr_code = create_qr_code(secret)
                 # On s'assure qu'elle est bien activée
-                activate_2fa(".env", True)
+                activate_2fa(current_user.id, True)
                 context["a2f_success"] = "Nouveau secret généré. Veuillez scanner le nouveau QR Code."
                 context["show_qrcode"] = True
 
             # Mise à jour de l'état pour l'affichage
-            context["a2f_enabled"] = is2FAEnabled()
+            context["a2f_enabled"] = is2FAEnabled(current_user.id)
             # Ajout d'un timestamp pour forcer le navigateur à recharger l'image du QR Code
             context["qr_timestamp"] = int(time.time())
     return render_template('settings.html', **context)

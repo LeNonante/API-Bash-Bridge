@@ -169,38 +169,46 @@ def create_qr_code(secret_key):
     
 
     img = qrcode.make(uri)
-    nom_fichier = "static/img/qrcode_2fa.png"
+    return img
 
-    # S'assurer que le dossier existe avant de sauvegarder
-    os.makedirs(os.path.dirname(nom_fichier), exist_ok=True)
+def get2FASecret(username):
+    user = User.query.filter_by(username=username).first()
+    if user:
+        return user.two_fa_secret
+    return None
 
-    img.save(nom_fichier)
-    return nom_fichier
-
-def get2FASecret():
-    return os.getenv("2FA_SECRET")
-
-def verify_code(code_entre):
-    secret_key = get2FASecret()
+def verify_code(username, code_entre):
+    secret_key = get2FASecret(username)
     totp = pyotp.TOTP(secret_key)
     # verify() retourne True ou False. 
     # Il gère automatiquement la fenêtre de temps (actuel +/- 30 secondes)
     return totp.verify(code_entre)
 
-def set2FASecret(env_file, secret_key):
-    set_key(env_file, "2FA_SECRET", secret_key)
-    load_dotenv(override=True)
-    
-def isThere2FASecret() :
-    return os.getenv("2FA_SECRET") is not None
+def set2FASecret(username, secret_key):
+    user = User.query.filter_by(username=username).first()
+    if user:
+        user.two_fa_secret = secret_key
+        db.session.commit()
+        return True
+    return False
 
-def activate_2fa(env_file, activate=True):
-    value = "TRUE" if activate else "FALSE"
-    set_key(env_file, "ENABLE_2FA", value)
-    load_dotenv(override=True)
+def isThere2FASecret(username) :
+    secret_key = get2FASecret(username)
+    return secret_key is not None
+
+def activate_2fa(username, activate=True):
+    user = User.query.filter_by(username=username).first()
+    if user:
+        user.is_2fa_enabled = activate
+        db.session.commit()
+        return True
+    return False
     
-def is2FAEnabled():
-    return os.getenv("ENABLE_2FA", "FALSE") == "TRUE"
+def is2FAEnabled(username):
+    user = User.query.filter_by(username=username).first()
+    if user:
+        return user.is_2fa_enabled
+    return False
     
     
 #SQL ALCHEMY FUNCTIONS---------------------------

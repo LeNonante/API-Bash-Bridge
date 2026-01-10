@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API-Bash Bridge</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='register_login.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="/" class="logo-link" style="text-decoration: none;">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="5" width="17" height="14" rx="2" stroke="#22d3ee" stroke-width="2"/>
+                        <path d="M7 10L9 12L7 14" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 14H16" stroke="#22d3ee" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </a>
+        </div>
+        
+        <div class="nav-center">
+            <a href="/docs" class="nav-link">Documentation</a>
+        </div>
+
+        <button class="mobile-menu-toggle" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu">
+        <a href="/docs" class="mobile-nav-link">Documentation</a>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="5" width="17" height="14" rx="2" stroke="#22d3ee" stroke-width="2"/>
+                    <path d="M7 10L9 12L7 14" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 14H16" stroke="#22d3ee" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <h1>API-Bash Bridge</h1>
+            <p class="subtitle">Interface d'administration</p>
+        </div>
+
+        <div class="login-card">
+            <h2>Connexion {{ current_user.id }}</h2>
+            <p class="description">Vérification de la double authentification</p>
+            
+            <form method="post" action="/login">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                {% if erreur %}
+                    <div class="error-message">{{ erreur }}</div>
+                {% endif %}
+                    <div class="form-group" style="margin-top: 24px;">
+                        <label for="2fa_code">Code 2FA</label>
+                        <div class="otp-inputs">
+                            <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" required>
+                            <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" required>
+                            <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" required>
+                            <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" required>
+                            <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" required>
+                            <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" required>
+                        </div>
+                        <input type="hidden" id="2fa_code" name="2fa_code">
+                    </div>
+
+                <button type="submit" class="btn-submit" name="action" value="loginUser">
+                    Se connecter
+                </button>
+            </form>
+
+        </div>
+
+        <footer>
+            <p class="security-notice">Accès sécurisé réservé au personnel autorisé.</p>
+            <p class="copyright">© 2025 - LeNonante - API-Bash Bridge - Version {{ config.APP_VERSION }}</p>
+        </footer>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+        const mobileMenu = document.querySelector('.mobile-menu');
+        
+        mobileMenuToggle.addEventListener('click', function() {
+            this.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.navbar') && !event.target.closest('.mobile-menu')) {
+                mobileMenuToggle.classList.remove('active');
+                mobileMenu.classList.remove('active');
+            }
+        });
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('eyeIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+            } else {
+                passwordInput.type = 'password';
+            }
+        }
+
+        // OTP inputs handling
+        const otpInputs = document.querySelectorAll('.otp-input');
+        const otpHidden = document.getElementById('2fa_code');
+
+        otpInputs.forEach((input, index) => {
+            // Quand on tape un chiffre, passer au suivant
+            input.addEventListener('input', (e) => {
+                const value = e.target.value;
+                // Ne garder que le dernier chiffre tapé
+                if (value.length > 1) {
+                    e.target.value = value.slice(-1);
+                }
+                // Passer au champ suivant si c'est un chiffre
+                if (e.target.value.match(/[0-9]/) && index < otpInputs.length - 1) {
+                    otpInputs[index + 1].focus();
+                }
+                updateOtpValue();
+            });
+
+            // Gestion de la touche Backspace
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace') {
+                    if (input.value === '' && index > 0) {
+                        // Si le champ est vide, revenir au précédent et le vider
+                        otpInputs[index - 1].focus();
+                        otpInputs[index - 1].value = '';
+                        updateOtpValue();
+                    }
+                }
+            });
+
+            // Permettre le collage d'un code complet
+            input.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+                for (let i = 0; i < pastedData.length && i < otpInputs.length; i++) {
+                    otpInputs[i].value = pastedData[i];
+                }
+                if (pastedData.length > 0) {
+                    otpInputs[Math.min(pastedData.length, otpInputs.length - 1)].focus();
+                }
+                updateOtpValue();
+            });
+        });
+
+        function updateOtpValue() {
+            if (otpHidden) {
+                const code = Array.from(otpInputs).map(input => input.value).join('');
+                otpHidden.value = code;
+            }
+        }
+    </script>
+</body>
+</html>
