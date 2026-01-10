@@ -11,6 +11,8 @@ from filelock import FileLock
 from database.extensions import db
 from database.models import Route, AccessRule, User
 from sqlalchemy.exc import IntegrityError
+import io
+import base64
 
 
 # Variables globales pour le cache
@@ -169,7 +171,17 @@ def create_qr_code(secret_key):
     
 
     img = qrcode.make(uri)
-    return img
+
+    # 1. On crée un tampon mémoire (comme un fichier virtuel)
+    buffer = io.BytesIO()
+    
+    # 2. On sauvegarde l'image dans ce tampon au format PNG
+    img.save(buffer, format="PNG")
+    
+    # 3. On récupère les bytes, on encode en base64, et on decode en string utf-8
+    img_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    
+    return img_str
 
 def get2FASecret(username):
     user = User.query.filter_by(username=username).first()

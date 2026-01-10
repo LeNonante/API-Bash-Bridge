@@ -423,6 +423,7 @@ def settings():
                 activate_2fa(current_user.id, True)
                 context["a2f_success"] = "A2F Activée. Scannez le QR Code ci-dessous."
                 context["show_qrcode"] = True
+                context["img_qr_code"] = img_qr_code
                 
             elif sub_action == "disable":
                 activate_2fa(current_user.id, False)
@@ -437,7 +438,7 @@ def settings():
                 activate_2fa(current_user.id, True)
                 context["a2f_success"] = "Nouveau secret généré. Veuillez scanner le nouveau QR Code."
                 context["show_qrcode"] = True
-
+                context["img_qr_code"] = img_qr_code
             # Mise à jour de l'état pour l'affichage
             context["a2f_enabled"] = is2FAEnabled(current_user.id)
             # Ajout d'un timestamp pour forcer le navigateur à recharger l'image du QR Code
